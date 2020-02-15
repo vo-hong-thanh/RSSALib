@@ -5,11 +5,11 @@
  */
 package run.cmd;
 
-import simulator.nondelay.gillespie.DM;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import simulator.IAlgorithm;
+import simulator.nondelay.rssa.RSSA;
 
 /**
  *
@@ -23,8 +23,8 @@ public class CMDSim {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         
-        System.out.print("Enter number simulation step: ");
-        long steps = Long.parseLong(reader.readLine().trim());
+        System.out.print("Enter number simulation time: ");
+        double time = Long.parseLong(reader.readLine().trim());
 
         System.out.print("Loging time point: ");
         double logInterval = Double.parseDouble(reader.readLine().trim());
@@ -32,12 +32,12 @@ public class CMDSim {
         System.out.print("Model file: ");
         String modelFile = reader.readLine().trim();
 
-        String trackingFile;
+        String outputFileName;
         
-        //direct method
-        trackingFile = "DM_" + modelFile;
-        simulator = new DM();
-        simulator.config(steps, 0, logInterval, modelFile, true, trackingFile);
-        simulator.runSim();
+        //rssa
+        outputFileName = "RSSA_" + modelFile;
+        simulator = new RSSA();
+        simulator.loadModel(modelFile);
+        simulator.runSim(time, logInterval, true, outputFileName);
     }
 }

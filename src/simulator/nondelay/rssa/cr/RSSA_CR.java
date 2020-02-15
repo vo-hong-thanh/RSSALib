@@ -18,6 +18,7 @@ import model.Term;
 import utils.ComputingMachine;
 import utils.DataWriter;
 import java.util.Vector;
+import model.rates.InhibitoryHillKinetics;
 import simulator.IAlgorithm;
 import simulator.nondelay.rssa.RSSANode;
 
@@ -76,40 +77,20 @@ public class RSSA_CR implements IAlgorithm{
     private DataWriter dataWriter = null;
     private DataWriter performanceWriter = null;
     
-    public void config(long _maxStep, double _maxTime, double _logInterval, String modelFilename, boolean _isWriteable, String outputFilename) throws Exception {
-        if(_maxStep > 0)
-        {
-            maxStep = _maxStep;
-            simulationByStep = true;
-            maxTime = Double.MAX_VALUE;
-        }else
-        {
-            maxStep = 0;
-            simulationByStep = false;
-            maxTime = _maxTime;
-        }
-        
-        logInterval = _logInterval;
-        logPoint = _logInterval; 
-
+    @Override
+    public void loadModel(String modelFilename) throws Exception {
         //build model
-        ComputingMachine.buildModel(modelFilename, states, reactions);
+        ComputingMachine.buildModelFromFile(modelFilename, states, reactions);
         
         //build bipartie dependency
         ComputingMachine.buildSpecieReactionDependency(reactions, states);
 
         //build group
-        buildCRGroupList();
-
-        //writer
-        this.willWriteFile = _isWriteable;     
-        outputFile = outputFilename;
-        
-        //output
-        initalizeOutput();
+        buildCRGroupList();        
     }
 
-    public Hashtable<String, Vector<Double> > runSim() throws Exception {
+    @Override
+    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean __isWritingFile, String _outputFilename) throws Exception {
         System.out.println("RSSA with CR search and Fluctuation Interval [ (1 -/+ " + fluctuationRate + ")#X ]");        
 //        System.out.println("---------------------------------------------------");//   
 //        System.out.println(" Model information ");     
@@ -144,7 +125,11 @@ public class RSSA_CR implements IAlgorithm{
 //        }
 //
 //        System.out.println("---------------------------------------------------");
-        
+
+        //initialize output
+        initalizeSimulation(_maxTime, 0, _logInterval, __isWritingFile, _outputFilename);
+
+        //do sim
         long simTime = 0;
         long searchTime = 0;
         long updateTime = 0;
@@ -166,6 +151,10 @@ public class RSSA_CR implements IAlgorithm{
             
             long startSearchTime = System.currentTimeMillis();
             while (true) {
+                //propensity is too small => stop simulation
+                if(totalMaxPropensity < 1e-7){
+                    break;
+                }                
                 //select a group via linear search
                 searchValue = rand.nextDouble()*totalMaxPropensity;
                 double partialGroupSum = 0;        
@@ -231,8 +220,16 @@ public class RSSA_CR implements IAlgorithm{
             
             //update time
             currentTime += delta;
-            if(!simulationByStep && currentTime >= maxTime)
+            if(!simulationByStep && currentTime >= maxTime){
                 currentTime = maxTime;
+                //output
+                simOutput.get("t").add(logPoint);                
+                for (Species s : states.getSpeciesList()) {
+                    int pop = states.getPopulation(s);
+                    simOutput.get(s.getName()).add((double)pop);
+                }
+                break;
+            }
 
             //update population
             ComputingMachine.executeReaction(fireReactionIndex, reactions, states);
@@ -292,10 +289,12 @@ public class RSSA_CR implements IAlgorithm{
                     int pop = simOutput.get(s.getName()).get(i).intValue();
                     dataWriter.write(pop +"\t");                    
                 }
-        
-                performanceWriter.writeLine("Time\tFiring\tTrial\tUpdate\tRunTime\tSearchTime\tUpdateTime");
-                performanceWriter.writeLine(currentTime +"\t" + firing + "\t" +  totalTrial + "\t" +  updateStep + "\t" + simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
+                dataWriter.writeLine();                
             }
+                        
+            //performance
+            performanceWriter.writeLine("Time\tFiring\tTrial\tUpdate\tRunTime\tSearchTime\tUpdateTime");
+            performanceWriter.writeLine(currentTime +"\t" + firing + "\t" +  totalTrial + "\t" +  updateStep + "\t" + simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
             
             dataWriter.flush();
             dataWriter.close();
@@ -327,6 +326,12 @@ public class RSSA_CR implements IAlgorithm{
             double min_propensity = ComputingMachine.computePropensity(r, lowerStates);
             double max_propensity = ComputingMachine.computePropensity(r, upperStates);
 
+            if(r.getRateLaw() instanceof InhibitoryHillKinetics){
+                double temp = min_propensity;
+                min_propensity = max_propensity;
+                max_propensity = temp;
+            }
+            
             RSSANode node = new RSSANode(reactionIndex, min_propensity, max_propensity);
 //            System.out.println(" process reaction: " + reactionIndex + " with max propensity: " + max_propensity); 
 
@@ -337,7 +342,7 @@ public class RSSA_CR implements IAlgorithm{
 //                    System.out.println(" (This is first non-zero propensity) "); 
                     oneNonZeroPropensity = true;
 
-                    int exponent = ComputingMachine.calculateGroupExponent(max_propensity);
+                    int exponent = ComputingMachine.computeGroupExponent(max_propensity);
             
                     minGroupExponent = exponent;
                     maxGroupExponent = exponent;
@@ -355,7 +360,7 @@ public class RSSA_CR implements IAlgorithm{
                 if (newGroupIndex == -1) {
                     //either need to add new group or do nothing (propensity = 0)
                     if (max_propensity != 0.0) {
-                        addGroup(ComputingMachine.calculateGroupExponent(max_propensity));
+                        addGroup(ComputingMachine.computeGroupExponent(max_propensity));
                         newGroupIndex = getGroupIndex(max_propensity);//group index changed
 
                         groups.get(newGroupIndex).insert(reactionIndex, max_propensity);
@@ -374,8 +379,7 @@ public class RSSA_CR implements IAlgorithm{
         }
     }
 
-    private boolean isUpdateByReaction(int fireReactionIndex)
-    {
+    private boolean isUpdateByReaction(int fireReactionIndex){
         Reaction fireReaction = reactions.getReaction(fireReactionIndex);
         Species s;
 
@@ -406,10 +410,16 @@ public class RSSA_CR implements IAlgorithm{
         }
         else{
             for (int reactionIndex : needUpdateReactions) {
-                Reaction updateReaction = reactions.getReaction(reactionIndex);
-                double new_min_propensity = ComputingMachine.computePropensity(updateReaction, lowerStates);
-                double new_max_propensity = ComputingMachine.computePropensity(updateReaction, upperStates);
+                Reaction r = reactions.getReaction(reactionIndex);
+                double new_min_propensity = ComputingMachine.computePropensity(r, lowerStates);
+                double new_max_propensity = ComputingMachine.computePropensity(r, upperStates);
 
+                if(r.getRateLaw() instanceof InhibitoryHillKinetics){
+                    double temp = new_min_propensity;
+                    new_min_propensity = new_max_propensity;
+                    new_max_propensity = temp;
+                }
+                
                 RSSANode node = mapReactionToNode.get(reactionIndex);
                 double old_max_propensity = node.getMaxPropensity();
                 
@@ -437,7 +447,7 @@ public class RSSA_CR implements IAlgorithm{
                 
                 //either need to add new group or do nothing (propensity = 0)
                 if (newPropensity != 0.0) {
-                    addGroup(ComputingMachine.calculateGroupExponent(newPropensity));
+                    addGroup(ComputingMachine.computeGroupExponent(newPropensity));
                     newGroupIndex = getGroupIndex(newPropensity);//group index changed
                     
 //                    System.out.println(" => create new group with index " + newGroupIndex);
@@ -462,7 +472,7 @@ public class RSSA_CR implements IAlgorithm{
             if (newGroupIndex == -1) {
                 if (newPropensity > 0) {
                     //need to add a group
-                    addGroup(ComputingMachine.calculateGroupExponent(newPropensity));
+                    addGroup(ComputingMachine.computeGroupExponent(newPropensity));
                     newGroupIndex = getGroupIndex(newPropensity);//group index changed
                     
 //                    System.out.println("  => create new group " + newGroupIndex);
@@ -491,7 +501,7 @@ public class RSSA_CR implements IAlgorithm{
         if (propensityValue == 0.0) {
             return -1;
         } else {
-            int exponent = ComputingMachine.calculateGroupExponent(propensityValue);
+            int exponent = ComputingMachine.computeGroupExponent(propensityValue);
             if (exponent >= minGroupExponent && exponent <= maxGroupExponent) {
                 return maxGroupExponent - exponent;
             } else {
@@ -514,10 +524,28 @@ public class RSSA_CR implements IAlgorithm{
         }        
     }
     
-    private void initalizeOutput() {
+    private void initalizeSimulation(double _maxTime, long _maxStep, double _logInterval, boolean __isWritingFile, String _outputFilename) {
+        if(_maxStep > 0){
+            maxStep = _maxStep;
+            simulationByStep = true;
+            maxTime = Double.MAX_VALUE;
+        }
+        else{
+            maxStep = 0;
+            simulationByStep = false;
+            maxTime = _maxTime;
+        }
+        
+        logInterval = _logInterval;
+        logPoint = _logInterval; 
+        
+        //writer
+        this.willWriteFile = __isWritingFile;     
+        outputFile = _outputFilename;
+               
+        //output
         simOutput = new Hashtable<String, Vector<Double> >(); 
         
-        //output
         simOutput.put("t", new Vector<>());        
         Species[] species = states.getSpeciesList();
         for(Species s : species){

@@ -15,6 +15,7 @@ import model.Term;
 import utils.ComputingMachine;
 import utils.DataWriter;
 import java.util.Vector;
+import model.rates.InhibitoryHillKinetics;
 import simulator.IAlgorithm;
 
 /**
@@ -68,41 +69,20 @@ public class RSSA implements IAlgorithm{
     private DataWriter dataWriter = null;
     private DataWriter performanceWriter = null;
     
-    public void config(long _maxStep, double _maxTime, double _logInterval, String modelFilename, boolean _isWriteable, String outputFilename) throws Exception {
-        if(_maxStep > 0)
-        {
-            maxStep = _maxStep;
-            simulationByStep = true;
-            maxTime = Double.MAX_VALUE;
-        }else
-        {
-            maxStep = 0;
-            simulationByStep = false;
-            maxTime = _maxTime;
-        }
-        
-        logInterval = _logInterval;
-        logPoint = _logInterval; 
-
-        
+    @Override
+    public void loadModel(String modelFilename) throws Exception {
         //build model
-        ComputingMachine.buildModel(modelFilename, states, reactions);
+        ComputingMachine.buildModelFromFile(modelFilename, states, reactions);
         
         //build bipartie dependency
         ComputingMachine.buildSpecieReactionDependency(reactions, states);
 
         //build propensity
-        buildRDMNodeArray();
-
-        //writer
-        this.willWriteFile = _isWriteable;     
-        outputFile = outputFilename;
-        
-        //output
-        initalizeOutput();
+        buildRDMNodeArray();        
     }
 
-    public Hashtable<String, Vector<Double> > runSim() throws Exception {
+    @Override
+    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean _isWritingFile, String _outputFilename) throws Exception {
         System.out.println("RSSA with Fluctuation Interval [ (1 -/+ " + fluctuationRate + ")#X ]");
 //        System.out.println("---------------------------------------------------");
 //        System.out.println("-----------------Model information-----------------");
@@ -114,6 +94,10 @@ public class RSSA implements IAlgorithm{
 //        
 //        System.out.println("---------------------------------------------------");
         
+        //initialize output
+        initalizeSimulation(_maxTime, 0, _logInterval, _isWritingFile, _outputFilename);
+
+        //do sim
         long simTime = 0;
         long searchTime = 0;
         long updateTime = 0;
@@ -128,16 +112,26 @@ public class RSSA implements IAlgorithm{
         do{
             numTrial = 1;            
             nodeIndex = -1;
-
+//            System.out.println("total max propensity: " + totalMaxPropensity);
+            
             long startSearchTime = System.currentTimeMillis();
             while (true) {
+                //propensity is too small => stop simulation
+                if(totalMaxPropensity < 1e-7){
+                    break;
+                }
+                
                 //search for candidate reaction
                 searchValue = rand.nextDouble() * totalMaxPropensity;
+//                System.out.println(" - random search value: " + searchValue);
                 double partialMaxPropensity = 0.0;
                 for (nodeIndex = 0; nodeIndex < RDMNodeList.length; nodeIndex++) {
+//                    System.out.println(" examine node with value " + RDMNodeList[nodeIndex].getMaxPropensity());
                     partialMaxPropensity += RDMNodeList[nodeIndex].getMaxPropensity();
 
                     if (partialMaxPropensity >= searchValue) {
+//                        System.out.println(" => select candidate reaction index " + RDMNodeList[nodeIndex].getReactionIndex());
+                        
                         break;
                     }
                 }
@@ -148,29 +142,46 @@ public class RSSA implements IAlgorithm{
 
 //                System.out.println(" - min propensity: " + RDMNodeList[nodeIndex].getMinPropensity() + ", max propensity: "+ RDMNodeList[nodeIndex].getMaxPropensity() );
                 if (RDMNodeList[nodeIndex].getMinPropensity() != 0 && acceptantProb <= RDMNodeList[nodeIndex].getMinPropensity() / RDMNodeList[nodeIndex].getMaxPropensity()) {
-//                    System.out.println("  => Squeeze");
+//                    System.out.println("  => squeezely accepted");
                     break;
                 }
 
                 double currentPropensity = ComputingMachine.computePropensity(reactions.getReaction(RDMNodeList[nodeIndex].getReactionIndex()), states);
-//                System.out.println(" - curent propensity: " + currentPropensity );
+//                System.out.println(" - compute propensity: " + currentPropensity );
                 if (currentPropensity != 0 && acceptantProb <= currentPropensity / RDMNodeList[nodeIndex].getMaxPropensity()) {
-//                    System.out.println("  => Evaluate propensity");
+//                    System.out.println("  => accept by propensity");
                     break;
                 }
+                
+//                System.out.println("  => reject, try again");
                 numTrial++;
             }
             long endSearchTime = System.currentTimeMillis();
             searchTime += (endSearchTime - startSearchTime);
 
             double delta = ComputingMachine.computeTentativeTime(numTrial, rand, totalMaxPropensity);
-//            System.out.println("total max propensity: " + totalMaxPropensity + "=> delta: " + delta);
+//            System.out.println(" delta: " + delta);
             
+            //too small time increasemence
+//            if(delta < 1e-7){
+//                delta = logPoint - currentTime > 0 ? logPoint - currentTime : maxTime - currentTime;
+//            }
+
             //update time
             currentTime += delta;
-            if(!simulationByStep && currentTime >= maxTime)
+            if(!simulationByStep && currentTime >= maxTime){
                 currentTime = maxTime;
-
+                
+                if (currentTime >= logPoint) {
+                    //output
+                    simOutput.get("t").add(logPoint);                
+                    for (Species s : states.getSpeciesList()) {
+                        int pop = states.getPopulation(s);
+                        simOutput.get(s.getName()).add((double)pop);
+                    }
+                }
+                break;
+            }    
             int fireReactionIndex = RDMNodeList[nodeIndex].getReactionIndex();
 
             //update population
@@ -232,10 +243,11 @@ public class RSSA implements IAlgorithm{
                     int pop = simOutput.get(s.getName()).get(i).intValue();
                     dataWriter.write(pop +"\t");                    
                 }
-        
-                performanceWriter.writeLine("Time\tFiring\tTrial\tUpdate\tRunTime\tSearchTime\tUpdateTime");
-                performanceWriter.writeLine(currentTime +"\t" + firing + "\t" +  totalTrial + "\t" +  updateStep + "\t" + simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
+                dataWriter.writeLine();               
             }
+            
+            performanceWriter.writeLine("Time\tFiring\tTrial\tUpdate\tRunTime\tSearchTime\tUpdateTime");
+            performanceWriter.writeLine(currentTime +"\t" + firing + "\t" +  totalTrial + "\t" +  updateStep + "\t" + simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
             
             dataWriter.flush();
             dataWriter.close();
@@ -265,6 +277,12 @@ public class RSSA implements IAlgorithm{
         for (Reaction r : list) {
             double min_propensity = ComputingMachine.computePropensity(r, lowerStates);
             double max_propensity = ComputingMachine.computePropensity(r, upperStates);
+            
+            if(r.getRateLaw() instanceof InhibitoryHillKinetics){
+                double temp = min_propensity;
+                min_propensity = max_propensity;
+                max_propensity = temp;
+            }
 
             RDMNodeList[i] = new RSSANode(r.getReactionIndex(), min_propensity, max_propensity);
 
@@ -308,10 +326,17 @@ public class RSSA implements IAlgorithm{
         }
         else{
             for (int reactionIndex : needUpdateReactions) {
-                Reaction updateReaction = reactions.getReaction(reactionIndex);
-                double min_propensity = ComputingMachine.computePropensity(updateReaction, lowerStates);
-                double max_propensity = ComputingMachine.computePropensity(updateReaction, upperStates);
+                Reaction r = reactions.getReaction(reactionIndex);
+                
+                double min_propensity = ComputingMachine.computePropensity(r, lowerStates);
+                double max_propensity = ComputingMachine.computePropensity(r, upperStates);
 
+                if(r.getRateLaw() instanceof InhibitoryHillKinetics){
+                    double temp = min_propensity;
+                    min_propensity = max_propensity;
+                    max_propensity = temp;
+                }
+                            
                 RSSANode node = mapRactionIndexToNode.get(reactionIndex);
 
                 totalMaxPropensity += (max_propensity - node.getMaxPropensity());
@@ -337,10 +362,28 @@ public class RSSA implements IAlgorithm{
         }        
     }
     
-    private void initalizeOutput() {
-        simOutput = new Hashtable<String, Vector<Double> >(); 
+    private void initalizeSimulation(double _maxTime, long _maxStep, double _logInterval, boolean __isWritingFile, String _outputFilename) {
+        if(_maxStep > 0){
+            maxStep = _maxStep;
+            simulationByStep = true;
+            maxTime = Double.MAX_VALUE;
+        }
+        else{
+            maxStep = 0;
+            simulationByStep = false;
+            maxTime = _maxTime;
+        }
         
+        logInterval = _logInterval;
+        logPoint = _logInterval; 
+        
+        //writer
+        this.willWriteFile = __isWritingFile;     
+        outputFile = _outputFilename;
+               
         //output
+        simOutput = new Hashtable<String, Vector<Double> >(); 
+
         simOutput.put("t", new Vector<>());        
         Species[] species = states.getSpeciesList();
         for(Species s : species){

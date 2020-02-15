@@ -29,7 +29,7 @@ public class NetworkProperty {
     public void writeNetworkProperty(String modelFilename, String outputFileName) throws Exception
     {
         //build model
-        ComputingMachine.buildModel(modelFilename, states, reactions);
+        ComputingMachine.buildModelFromFile(modelFilename, states, reactions);
         
         //build reaction dependency graph
         ComputingMachine.buildReactionDependency(reactions);

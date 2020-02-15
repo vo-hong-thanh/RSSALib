@@ -13,6 +13,8 @@ import java.util.Vector;
  * @author vot2
  */
 public interface IAlgorithm {
-    public void config(long _maxStep, double _maxTime, double _logInterval, String modelFilename, boolean writeOutputFile, String outputFilename) throws Exception;
-    public Hashtable<String, Vector<Double> > runSim() throws Exception;
+//    public void loadModel(String[] speciesInfo, String[] reactionInfo, IRateLaw[] rates) throws Exception;
+    public void loadModel(String modelFilename) throws Exception;
+    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean _isWritingFile, String _outputFilename) throws Exception;
+//    public Hashtable<String, Vector<Double> > runSim(long _maxStep, double _logInterval, boolean _isWritingFile, String outputFilename) throws Exception;
 }

@@ -1,0 +1,29 @@
+#rate constant (min^-1)
+c1 = 0.03  
+c2 = 0.06 
+c3 = 0.03 
+c4 = 0.001 
+c5 = 0.01 
+c6 = 10
+c7 = 10
+
+#delay time (min)
+d = 20
+
+#threshold
+s0 = 1000
+
+#inital population of specises
+S1 = 300 
+S2 = 10000
+S3 = 10000
+
+#reactions
+S1 -> _ , c1
+S2 -> _ , c2
+S3 -> _ , c3
+2S2 -> S3 , c4
+S3 -> 2S2 , c5 
+S1 -> S1 + S2 , INHIBITORYHILL(S1, c6 , 5 , s0) , CD(d) 
+S3 -> S1 + S3 , INHIBITORYHILL(S3, c7 , 5 , s0) , CD(d)
+

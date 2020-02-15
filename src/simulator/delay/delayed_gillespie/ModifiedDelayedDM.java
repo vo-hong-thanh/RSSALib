@@ -69,45 +69,21 @@ public class ModifiedDelayedDM implements IAlgorithm{
     private DataWriter dataWriter = null;
     private DataWriter performanceWriter = null;
     
-    public void config(long _maxStep, double _maxTime, double _logInterval, String modelFilename, boolean _isWriteable, String outputFilename) throws Exception {
-        if(_maxStep > 0){
-            maxStep = _maxStep;
-            simulationByStep = true;
-            maxTime = Double.MAX_VALUE;
-        }
-        else{
-            maxStep = 0;
-            simulationByStep = false;
-            maxTime = _maxTime;
-        }        
-        
-        logInterval = _logInterval;
-        logPoint = _logInterval;
-        
+    public void loadModel(String modelFilename) throws Exception {
         //build model
-        ComputingMachine.buildModel(modelFilename, states, reactions);
+        ComputingMachine.buildModelFromFile(modelFilename, states, reactions);
         
         //build dependency graph
         ComputingMachine.buildReactionDependency(reactions);
 
-        //build reaction dependency graph
-        ComputingMachine.buildReactionDependency(reactions);
-        
         //build bipartie species-reaction dependency graph
         ComputingMachine.buildSpecieReactionDependency(reactions, states);
 
         //build propensity list
         buildDMNodeList();        
-        
-        //writer
-        this.willWriteFile = _isWriteable;     
-        outputFile = outputFilename;
-        
-        //output
-        initalizeOutput();
     }
 
-    public Hashtable<String, Vector<Double> > runSim() throws Exception {
+    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean _isWritingFile, String _outputFilename) throws Exception {
         System.out.println("Modified Delayed Direct Method");
 
 //        System.out.println("---------------------------------------------------");//   
@@ -120,6 +96,10 @@ public class ModifiedDelayedDM implements IAlgorithm{
 //
 //        System.out.println("---------------------------------------------------");
         
+        //initialize output
+        initalizeSimulation(_maxTime, 0, _logInterval, _isWritingFile, _outputFilename);
+
+        //do sim
         long simTime = 0;
                 
         HashSet<Integer> updateReactions = new HashSet<Integer>();
@@ -133,7 +113,20 @@ public class ModifiedDelayedDM implements IAlgorithm{
 //            System.out.println("=> delta: " + delta);            
             //update time
             currentTime = currentTime + delta;
-
+            if(!simulationByStep && currentTime >= maxTime){
+                currentTime = maxTime;
+                
+                if (currentTime >= logPoint) {
+                    //output
+                    simOutput.get("t").add(logPoint);                
+                    for (Species s : states.getSpeciesList()) {
+                        int pop = states.getPopulation(s);
+                        simOutput.get(s.getName()).add((double)pop);
+                    }
+                }
+                break;
+            } 
+            
             //proceed delay reaction
             DelayedReactionTime d;
             //proceed delay reaction
@@ -260,10 +253,11 @@ public class ModifiedDelayedDM implements IAlgorithm{
                     int pop = simOutput.get(s.getName()).get(i).intValue();
                     dataWriter.write(pop +"\t");                    
                 }
-        
-                performanceWriter.writeLine("Time\tFiring\tDelayStep\tRunTime");
-                performanceWriter.writeLine(currentTime +"\t" + firing + "\t" + delayStep + "\t" + simTime/1000.0 );
+                dataWriter.writeLine();
             }
+                        
+            performanceWriter.writeLine("Time\tFiring\tDelayStep\tRunTime");
+            performanceWriter.writeLine(currentTime +"\t" + firing + "\t" + delayStep + "\t" + simTime/1000.0 );
             
             dataWriter.flush();
             dataWriter.close();
@@ -342,10 +336,28 @@ public class ModifiedDelayedDM implements IAlgorithm{
         return updateReactionsByProduct;
     }
 
-    private void initalizeOutput() {
-        simOutput = new Hashtable<String, Vector<Double> >(); 
+    private void initalizeSimulation(double _maxTime, long _maxStep, double _logInterval, boolean __isWritingFile, String _outputFilename) {
+        if(_maxStep > 0){
+            maxStep = _maxStep;
+            simulationByStep = true;
+            maxTime = Double.MAX_VALUE;
+        }
+        else{
+            maxStep = 0;
+            simulationByStep = false;
+            maxTime = _maxTime;
+        }
         
+        logInterval = _logInterval;
+        logPoint = _logInterval; 
+        
+        //writer
+        this.willWriteFile = __isWritingFile;     
+        outputFile = _outputFilename;
+               
         //output
+        simOutput = new Hashtable<String, Vector<Double> >(); 
+
         simOutput.put("t", new Vector<>());        
         Species[] species = states.getSpeciesList();
         for(Species s : species){

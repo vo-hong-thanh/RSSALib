@@ -13,6 +13,7 @@ import model.Reaction;
 import model.ReactionList;
 import model.Species;
 import model.StateList;
+import model.rates.InhibitoryHillKinetics;
 import simulator.nondelay.rssa.RSSANode;
 
 import utils.ComputingMachine;
@@ -65,31 +66,19 @@ public class SRSSA{
     private DataWriter dataWriter;
     private DataWriter performanceWriter;
 
-    public void config(double _maxTime, double _logInterval, int n, String modelFile, String trackingFile) throws Exception {                
-        simulationTime = _maxTime;
-        logInterval = _logInterval;
-        logPoint = _logInterval;
-        
-        numTrajectory = n;
-
+    public void loadModel(String modelFile) throws Exception {
         //build model
-        ComputingMachine.buildModel(modelFile, states, reactions);
+        ComputingMachine.buildModelFromFile(modelFile, states, reactions);
 
         //build bipartie dependency
         ComputingMachine.buildSpecieReactionDependency(reactions, states);
 
-        //MStateList
-        buildMStateList(states, numTrajectory);
-        
         //build propensity
         buildRDMNodeArray();
 
-        //set up writer
-        dataWriter = new DataWriter("(Data)" + trackingFile);
-        performanceWriter = new DataWriter("(Perf)" + trackingFile);
     }
 
-    public void runSim() throws Exception {
+    public void runSim(int numRuns, double _maxTime, double _logInterval, String _outputFilename) throws Exception {
         System.out.println("Simulatneous RSSA");
 //        
 //        System.out.println("---------------------------------------------------");
@@ -109,6 +98,19 @@ public class SRSSA{
 //        System.out.println(reactions);
 
 //        System.out.println("---------------------------------------------------");  
+
+        simulationTime = _maxTime;
+        logInterval = _logInterval;
+        logPoint = _logInterval;
+        
+        numTrajectory = numRuns;
+
+        //MStateList
+        buildMStateList(states, numTrajectory);
+        
+        //set up writer
+        dataWriter = new DataWriter("(Data)" + _outputFilename);
+        performanceWriter = new DataWriter("(Perf)" + _outputFilename);
         
         //write data
         dataWriter.write("time" + "\t");
@@ -158,7 +160,7 @@ public class SRSSA{
 
         int numTrial;
                 
-        int nodeIndex;
+        int nodeIndex = -1;
         int fireReactionIndex;
         double invertedTotalMaxPropensity;
         double delta;
@@ -176,6 +178,11 @@ public class SRSSA{
                     long startSearchTime = System.currentTimeMillis();
                     numTrial = 1;
                     while (true) {
+                        //propensity is too small => stop simulation
+                        if(totalMaxPropensity < 1e-7){
+                            break;
+                        }
+                        //random search value                        
                         randomValue = rand[position].nextDouble();
 
                         searchValue = randomValue * totalMaxPropensity;
@@ -207,8 +214,6 @@ public class SRSSA{
                         }
                         numTrial++;
                     }
-                    fireReactionIndex = RDMNodeList[nodeIndex].getReactionIndex();
-                    
                     long endSearchTime = System.currentTimeMillis();
                     searchTime += endSearchTime - startSearchTime;
                     
@@ -230,6 +235,10 @@ public class SRSSA{
                         countFinishedTrajectory++;
                         break;                        
                     }
+                    
+                    //reaction firing
+                    fireReactionIndex = RDMNodeList[nodeIndex].getReactionIndex();
+                    
                     //update population
                     HashSet<Species> updateSpeciesPerSimulation = ComputingMachine.executeReaction(fireReactionIndex, reactions, mstates, position, lowerStates, upperStates);
 
@@ -321,7 +330,13 @@ public class SRSSA{
         for (Reaction r : list) {
             double minPropensity = ComputingMachine.computePropensity(r, lowerStates);
             double maxPropensity = ComputingMachine.computePropensity(r, upperStates);
-
+            
+            if(r.getRateLaw() instanceof InhibitoryHillKinetics){
+                double temp = minPropensity;
+                minPropensity = maxPropensity;
+                maxPropensity = temp;
+            }
+            
             RDMNodeList[i] = new RSSANode(r.getReactionIndex(), minPropensity, maxPropensity);
 
             mapRactionIndexToNode.put(r.getReactionIndex(), RDMNodeList[i]);
@@ -355,7 +370,13 @@ public class SRSSA{
             Reaction r = reactions.getReaction(reactionIndex);
             double min_propensity = ComputingMachine.computePropensity(r, lowerStates);
             double max_propensity = ComputingMachine.computePropensity(r, upperStates);
-
+            
+            if(r.getRateLaw() instanceof InhibitoryHillKinetics){
+                double temp = min_propensity;
+                min_propensity = max_propensity;
+                max_propensity = temp;
+            }
+            
             RSSANode node = mapRactionIndexToNode.get(reactionIndex);
 
             totalMaxPropensity += (max_propensity - node.getMaxPropensity());

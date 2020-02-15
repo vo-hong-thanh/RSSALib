@@ -5,7 +5,7 @@
  */
 package utils;
 
-import model.kinetics.KINETIC_TYPE;
+import model.rates.KINETIC_TYPE;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -21,10 +21,11 @@ import model.ReactionList;
 import model.Species;
 import model.StateList;
 import model.Term;
-import model.kinetics.HillKinetics;
-import model.kinetics.IRateLaw;
-import model.kinetics.MMKinetics;
-import model.kinetics.MassActionKinetics;
+import model.rates.ExhibitoryHillKinetics;
+import model.rates.IRateLaw;
+import model.rates.InhibitoryHillKinetics;
+import model.rates.MMKinetics;
+import model.rates.MassActionKinetics;
 
 /**
  *
@@ -34,7 +35,7 @@ public class ComputingMachine {
     public static final double BASE = 2;
     
     //compute exponent
-    public static int calculateGroupExponent(double propensityValue) {
+    public static int computeGroupExponent(double propensityValue) {
         int exponent = (int) Math.ceil(Math.log(propensityValue) / Math.log(BASE));
         return exponent;
     }    
@@ -47,7 +48,7 @@ public class ComputingMachine {
     public static double computeTentativeTime(Random rand, double propensity) {
         double time = Double.MAX_VALUE;
 
-        if (propensity != 0.0) {
+        if (propensity >= 0.0) {
             time = Math.log(1/rand.nextDouble())/propensity;
         }
         return time;
@@ -69,7 +70,7 @@ public class ComputingMachine {
         }
 
         double time = Double.MAX_VALUE;
-        if (propensity != 0.0) {
+        if (propensity >= 0.0) {
             time = Math.log(1 / random) / propensity;
         }
 
@@ -237,7 +238,7 @@ public class ComputingMachine {
     }
     
     //build model
-    public static void buildModel(String modelFilename, StateList states, ReactionList reactions) throws Exception{
+    public static void buildModelFromFile(String modelFilename, StateList states, ReactionList reactions) throws Exception{
         Hashtable<String, Double> parameters = new Hashtable<>();
         
         //read initial state vector
@@ -266,30 +267,33 @@ public class ComputingMachine {
 //                System.out.println(" => set parameter = " + parameterName + ", value = " + parameters.get(parameterName));    
             }
             else if(dataLine.contains("->")){
-//                System.out.println("+build reaction");
+//                System.out.println("+build reaction with info: " + dataLine);
                 
                 //parse reaction
-                StringTokenizer rr = new StringTokenizer(dataLine, "->");
-                
+                int indexofTo = dataLine.indexOf("->");
+                               
                 //build reactants
+                String reactantData = dataLine.substring(0, indexofTo);
 //                System.out.println(" -build reactants");
-                ArrayList<Term> reactants = buildPartOfReaction(parameters, states, rr.nextToken(), -1);                
+                ArrayList<Term> reactants = buildPartofReaction(parameters, states, reactantData.trim(), -1);                
                 for(Term t : reactants){
                     t.getSpecies().setIsProductOnly(false);
                 }
                 
-                int commasIndex;
+                int commasIndex;                
+                String restData = dataLine.substring(indexofTo + 2);
                 
-                String restData = rr.nextToken();
                 commasIndex = restData.indexOf(',');
                 //build products
 //                System.out.println(" -build products");
-                ArrayList<Term> products = buildPartOfReaction(parameters, states, restData.substring(0, commasIndex), 1);
+                ArrayList<Term> products = buildPartofReaction(parameters, states, restData.substring(0, commasIndex).trim(), 1);
                 
                 restData = restData.substring(commasIndex + 1).trim();
+                
                 String rateData = "";
                 String delayData = "";
-                if(restData.startsWith(KINETIC_TYPE.MASS_ACTION) || restData.startsWith(KINETIC_TYPE.MICHAELIS_MENTEN) || restData.startsWith(KINETIC_TYPE.HILL)) {
+                if(restData.startsWith(KINETIC_TYPE.MASS_ACTION) || restData.startsWith(KINETIC_TYPE.MICHAELIS_MENTEN) 
+                || restData.startsWith(KINETIC_TYPE.HILL) || restData.startsWith(KINETIC_TYPE.INHIBITORYHILL)) {
                     int closeParenthesisIndex = restData.indexOf(')');
                     rateData = restData.substring(0, closeParenthesisIndex + 1);
                     
@@ -311,8 +315,8 @@ public class ComputingMachine {
                 }
                 
                 //build rate
-//                    System.out.println(" -build rate");
-                IRateLaw rate = buildRate(parameters, reactants, rateData.trim());
+//                System.out.println(" - build rate " + rateData);
+                IRateLaw rate = buildRateLaw(parameters, reactants, rateData.trim());
 //                    System.out.println(" -> rate: " + rate.toString());    
                 
                 DelayInfo delay = null;
@@ -320,7 +324,7 @@ public class ComputingMachine {
                     delay = new DelayInfo();
                 }
                 else{
-                    delay = buildDelay(delayData.trim());
+                    delay = buildDelay(parameters, delayData.trim());
                 }
                 
                 Reaction r = new Reaction(reactionIndex, reactants, products, rate, delay);
@@ -333,9 +337,8 @@ public class ComputingMachine {
     }
     
     //build parts of reaction   
-    private static ArrayList<Term> buildPartOfReaction(Hashtable<String, Double> parameters, StateList states, String part, int mul) {
-//        System.out.println("proceed " + part);
-        
+    private static ArrayList<Term> buildPartofReaction(Hashtable<String, Double> parameters, StateList states, String part, int mul) {
+//        System.out.println("proceed " + part);        
         ArrayList<Term> partTerm = new ArrayList<Term>();
         if (part.trim().equals("_")) {
             return partTerm;
@@ -361,9 +364,7 @@ public class ComputingMachine {
             if(parameters.containsKey(name)){
                 pop = parameters.get(name).intValue();
             }
-            
-            
-            
+                        
 //            System.out.print("  species name = " + name + ", pop = " + pop );            
             Species s = states.getSpecies(name);
             if(s == null){
@@ -380,7 +381,7 @@ public class ComputingMachine {
     }
     
     //build rate
-    public static IRateLaw buildRate(Hashtable<String, Double> parameters, ArrayList<Term> reactants, String rateInfo){
+    public static IRateLaw buildRateLaw(Hashtable<String, Double> parameters, ArrayList<Term> reactants, String rateInfo){
         if(rateInfo.indexOf('(') == -1){
 //            System.out.print("  build mass-action kinetics by default");  
             return buildMassActionKinetics(parameters, rateInfo);            
@@ -404,6 +405,10 @@ public class ComputingMachine {
 //                System.out.print("  build Hill kinetics "); 
                 return buildHillKinetics(parameters, reactants, rateData);  
             }
+            else if(kineticInfo.equals(KINETIC_TYPE.INHIBITORYHILL)){
+//                System.out.print("  build Hill kinetics "); 
+                return buildInhibitoryHillKinetics(parameters, reactants, rateData);  
+            }
             else{
                 throw new UnsupportedOperationException("Not yet supported kinetics");
             }           
@@ -412,7 +417,8 @@ public class ComputingMachine {
     
     //build specific rate
     private static IRateLaw buildMassActionKinetics(Hashtable<String, Double> parameters, String rateData) {
-        double rateConstant = getValue(parameters, rateData);        
+//        System.out.print("  build mass-action kinetics with value " + rateData);  
+        double rateConstant = getParameterValue(parameters, rateData);        
         MassActionKinetics massRate = new MassActionKinetics(rateConstant);
         
 //        System.out.println( massRate.toString());  
@@ -423,10 +429,11 @@ public class ComputingMachine {
     private static IRateLaw buildMichaelisMentenKinetics(Hashtable<String, Double> parameters, ArrayList<Term> reactants, String rateData) {
         StringTokenizer tokens = new StringTokenizer(rateData, ",");
         
-        double Vm = getValue(parameters, tokens.nextToken().trim());
-        double Km = getValue(parameters, tokens.nextToken().trim());        
-        
         String substrateName = tokens.nextToken().trim();
+        
+        double Vm = getParameterValue(parameters, tokens.nextToken().trim());
+        double Km = getParameterValue(parameters, tokens.nextToken().trim());        
+                
         for(int i = 0; i < reactants.size(); i++){
             Species s = reactants.get(i).getSpecies();
             if(s.getName().equals(substrateName)){
@@ -444,14 +451,16 @@ public class ComputingMachine {
     private static IRateLaw buildHillKinetics(Hashtable<String, Double> parameters, ArrayList<Term> reactants, String rateData) {
         StringTokenizer tokens = new StringTokenizer(rateData, ",");
         
-        double k = getValue(parameters, tokens.nextToken().trim());
-        double n = getValue(parameters, tokens.nextToken().trim());
+        String proteinName = tokens.nextToken().trim();                
+        double baseRate = getParameterValue(parameters, tokens.nextToken().trim());
         
-        String proteinName = tokens.nextToken().trim();
+        double n = getParameterValue(parameters, tokens.nextToken().trim());        
+        double threshold = getParameterValue(parameters, tokens.nextToken().trim());               
+              
         for(int i = 0; i < reactants.size(); i++){
             Species s = reactants.get(i).getSpecies();
             if(s.getName().equals(proteinName)){
-                HillKinetics hillRate = new HillKinetics(s, n, k);
+                ExhibitoryHillKinetics hillRate = new ExhibitoryHillKinetics(s, baseRate, n, threshold);
                 
 //                System.out.println( hillRate.toString());
                 
@@ -461,15 +470,35 @@ public class ComputingMachine {
         return null;    
     }
     
+    private static IRateLaw buildInhibitoryHillKinetics(Hashtable<String, Double> parameters, ArrayList<Term> reactants, String rateData) {
+        StringTokenizer tokens = new StringTokenizer(rateData, ",");
+        
+        String proteinName = tokens.nextToken().trim();                
+        double baseRate = getParameterValue(parameters, tokens.nextToken().trim());
+        double n = getParameterValue(parameters, tokens.nextToken().trim());        
+        double threshold = getParameterValue(parameters, tokens.nextToken().trim());               
+              
+        for(int i = 0; i < reactants.size(); i++){
+            Species s = reactants.get(i).getSpecies();
+            if(s.getName().equals(proteinName)){
+                InhibitoryHillKinetics hillRate = new InhibitoryHillKinetics(s, baseRate, n, threshold);                
+//                System.out.println( hillRate.toString());
+                
+                return hillRate;
+            }
+        }
+        return null;    
+    }
+    
     //build delay
-    private static DelayInfo buildDelay(String delayData) {
+    private static DelayInfo buildDelay(Hashtable<String, Double> parameters, String delayData) {
         DelayInfo delay = null;
         
         int openParenthesisIndex = delayData.indexOf('(');
         int closeParenthesisIndex = delayData.indexOf(')');
             
         String type = delayData.substring(0, openParenthesisIndex).trim();
-        double value = Double.parseDouble(delayData.substring(openParenthesisIndex+1, closeParenthesisIndex).trim());
+        double value = getParameterValue(parameters, delayData.substring(openParenthesisIndex+1, closeParenthesisIndex).trim());                
 
         if(type.equals(DELAY_TYPE.CONSUMING)) {//consuming reaction            
             delay = new DelayInfo(DELAY_TYPE.CONSUMING, value);            
@@ -514,7 +543,7 @@ public class ComputingMachine {
     }    
     
     //get value of parameter       
-    private static double getValue(Hashtable<String, Double> parameters, String paraName){
+    private static double getParameterValue(Hashtable<String, Double> parameters, String paraName){
         double paraValue;
         if(isNumeric(paraName)){
             //numeric data
@@ -529,6 +558,6 @@ public class ComputingMachine {
     
     //check numeric
     private static boolean isNumeric(String strNum) {
-        return strNum.matches("-?\\d+(\\.\\d+)?");
+        return strNum.matches("-?\\d+(\\.\\d+)?(e(-|\\+)?\\d+)?");
     }    
 }

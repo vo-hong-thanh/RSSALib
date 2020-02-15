@@ -15,6 +15,7 @@ import model.ReactionList;
 import model.Species;
 import model.StateList;
 import model.Term;
+import model.rates.InhibitoryHillKinetics;
 import simulator.IAlgorithm;
 
 /**
@@ -73,40 +74,20 @@ public class ModifiedRSSA implements IAlgorithm{
     private DataWriter dataWriter = null;
     private DataWriter performanceWriter = null;
     
-    public void config(long _maxStep, double _maxTime, double _logInterval, String modelFilename, boolean _isWriteable, String outputFilename) throws Exception {
-        if(_maxStep > 0)
-        {
-            maxStep = _maxStep;
-            simulationByStep = true;
-            maxTime = Double.MAX_VALUE;
-        }else
-        {
-            maxStep = 0;
-            simulationByStep = false;
-            maxTime = _maxTime;
-        }
-        
-        logInterval = _logInterval;
-        logPoint = _logInterval; 
-
+    @Override
+    public void loadModel(String modelFilename) throws Exception {
         //build model
-        ComputingMachine.buildModel(modelFilename, states, reactions);
+        ComputingMachine.buildModelFromFile(modelFilename, states, reactions);
         
         //build bipartie dependency
         ComputingMachine.buildSpecieReactionDependency(reactions, states);
 
         //build propensity
         buildRDMNodeArray();
-
-        //writer
-        this.willWriteFile = _isWriteable;     
-        outputFile = outputFilename;
-        
-        //output
-        initalizeOutput();
     }
 
-    public Hashtable<String, Vector<Double> > runSim() throws Exception {
+    @Override
+    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean __isWritingFile, String _outputFilename) throws Exception {
         System.out.println("Modified RSSA with Fluctuation Interval [ (1 -/+ " + fluctuationRate + ")#X ]");
         
 //        System.out.println("---------------------------------------------------");//   
@@ -119,6 +100,10 @@ public class ModifiedRSSA implements IAlgorithm{
 //
 //        System.out.println("---------------------------------------------------");
         
+        //initialize output
+        initalizeSimulation(_maxTime, 0, _logInterval, __isWritingFile, _outputFilename);
+        
+        //do sim
         long simTime = 0;
         long searchTime = 0;
         long updateTime = 0;
@@ -134,6 +119,11 @@ public class ModifiedRSSA implements IAlgorithm{
             
             long startSearchTime = System.currentTimeMillis();
             while (true) {
+                //propensity is too small => stop simulation
+                if(totalMaxPropensity < 1e-7){
+                    break;
+                }
+                
                 //search for candidate reaction
                 searchValue = rand.nextDouble() * totalMaxPropensity;
                 if(subTotalMaxPropensity < searchValue){
@@ -182,8 +172,17 @@ public class ModifiedRSSA implements IAlgorithm{
             
             //update time
             currentTime += delta;
-            if(!simulationByStep && currentTime >= maxTime)
+            if(!simulationByStep && currentTime >= maxTime){
                 currentTime = maxTime;
+                
+                //output
+                simOutput.get("t").add(logPoint);                
+                for (Species s : states.getSpeciesList()) {
+                    int pop = states.getPopulation(s);
+                    simOutput.get(s.getName()).add((double)pop);
+                }
+            }
+                
 
             int fireReactionIndex = RDMNodeList[nodeIndex].getReactionIndex();
 
@@ -247,10 +246,12 @@ public class ModifiedRSSA implements IAlgorithm{
                     int pop = simOutput.get(s.getName()).get(i).intValue();
                     dataWriter.write(pop +"\t");                    
                 }
-        
-                performanceWriter.writeLine("Time\tFiring\tTrial\tUpdate\tRunTime\tSearchTime\tUpdateTime");
-                performanceWriter.writeLine(currentTime +"\t" + firing + "\t" +  totalTrial + "\t" +  updateStep + "\t" + simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
-            }
+                dataWriter.writeLine();                
+            }            
+            
+            //performance            
+            performanceWriter.writeLine("Time\tFiring\tTrial\tUpdate\tRunTime\tSearchTime\tUpdateTime");
+            performanceWriter.writeLine(currentTime +"\t" + firing + "\t" +  totalTrial + "\t" +  updateStep + "\t" + simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
             
             dataWriter.flush();
             dataWriter.close();
@@ -281,6 +282,12 @@ public class ModifiedRSSA implements IAlgorithm{
             double min_propensity = ComputingMachine.computePropensity(r, lowerStates);
             double max_propensity = ComputingMachine.computePropensity(r, upperStates);
 
+            if(r.getRateLaw() instanceof InhibitoryHillKinetics){
+                double temp = min_propensity;
+                min_propensity = max_propensity;
+                max_propensity = temp;
+            }
+            
             RDMNodeList[i] = new RSSANode(r.getReactionIndex(), min_propensity, max_propensity);
 
             mapRactionIndexToNodeIndex.put(r.getReactionIndex(), i);
@@ -327,6 +334,12 @@ public class ModifiedRSSA implements IAlgorithm{
                 double min_propensity = ComputingMachine.computePropensity(updateReaction, lowerStates);
                 double max_propensity = ComputingMachine.computePropensity(updateReaction, upperStates);
 
+                if(updateReaction.getRateLaw() instanceof InhibitoryHillKinetics){
+                    double temp = min_propensity;
+                    min_propensity = max_propensity;
+                    max_propensity = temp;
+                }
+                
                 int affectedNodeIndex = mapRactionIndexToNodeIndex.get(reactionIndex);
 
                 double diff = max_propensity - RDMNodeList[affectedNodeIndex].getMaxPropensity();
@@ -357,10 +370,28 @@ public class ModifiedRSSA implements IAlgorithm{
         }        
     }
     
-    private void initalizeOutput() {
-        simOutput = new Hashtable<String, Vector<Double> >(); 
+    private void initalizeSimulation(double _maxTime, long _maxStep, double _logInterval, boolean __isWritingFile, String _outputFilename) {
+        if(_maxStep > 0){
+            maxStep = _maxStep;
+            simulationByStep = true;
+            maxTime = Double.MAX_VALUE;
+        }
+        else{
+            maxStep = 0;
+            simulationByStep = false;
+            maxTime = _maxTime;
+        }
         
+        logInterval = _logInterval;
+        logPoint = _logInterval; 
+        
+        //writer
+        this.willWriteFile = __isWritingFile;     
+        outputFile = _outputFilename;
+               
         //output
+        simOutput = new Hashtable<String, Vector<Double> >(); 
+
         simOutput.put("t", new Vector<>());        
         Species[] species = states.getSpeciesList();
         for(Species s : species){

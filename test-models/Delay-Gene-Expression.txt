@@ -1,0 +1,19 @@
+#rate constant 
+c1 = 0.01
+c2 = 5
+c3 = 1
+c4 = 0.01
+
+#delay time
+d = 10
+
+#inital population
+DNA   = 1000
+DNAP  = 0
+P  = 0
+
+#[Kinetics] reactants -> products, rate, delayinfo 
+DNA + P -> DNAP , c1
+DNAP -> DNA + P , c2  
+DNA -> DNA + P  , c3  , NCD(d)
+P -> _  , c4 

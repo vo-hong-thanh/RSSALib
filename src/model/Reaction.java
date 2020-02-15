@@ -7,8 +7,8 @@ import java.util.ArrayList;
  * and open the template in the editor.
  */
 import java.util.HashSet;
-import model.kinetics.IRateLaw;
-import model.kinetics.MassActionKinetics;
+import model.rates.IRateLaw;
+import model.rates.MassActionKinetics;
 /**
  *
  * @author Hong Thanh
@@ -33,15 +33,7 @@ public class Reaction {
         
         //no delay
         delay = new DelayInfo(DELAY_TYPE.NODELAY, 0);
-    }
-    
-    public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products, IRateLaw _rate, DelayInfo _delay) {
-        this.reactionIndex = index;
-        this.reactants = reactants;
-        this.products = products;   
-        rate = _rate;
-        delay = _delay;
-    }
+    }    
     
     public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products, IRateLaw _rate) {
         this.reactionIndex = index;
@@ -51,6 +43,14 @@ public class Reaction {
         
         //no delay
         delay = new DelayInfo(DELAY_TYPE.NODELAY, 0);
+    }
+    
+    public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products, IRateLaw _rate, DelayInfo _delay) {
+        this.reactionIndex = index;
+        this.reactants = reactants;
+        this.products = products;   
+        rate = _rate;
+        delay = _delay;
     }
     
     public int getReactionIndex() {

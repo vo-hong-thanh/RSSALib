@@ -168,7 +168,7 @@ public class PartialGroup {
 //                    System.out.println(" (This is first non-zero value) "); 
                     oneNonZeroPropensity = true;
 
-                    int exponent = ComputingMachine.calculateGroupExponent(value);
+                    int exponent = ComputingMachine.computeGroupExponent(value);
             
                     minGroupExponent = exponent;
                     maxGroupExponent = exponent;
@@ -185,7 +185,7 @@ public class PartialGroup {
                 if (newGroupIndex == -1) {
                     //either need to add new group or do nothing (value = 0)
                     if (value != 0.0) {
-                        addGroup(ComputingMachine.calculateGroupExponent(value));
+                        addGroup(ComputingMachine.computeGroupExponent(value));
                         newGroupIndex = getGroupIndex(value);//group index changed
                         crnode_list.get(newGroupIndex).insert(nodeIndex, value);
                         
@@ -234,7 +234,7 @@ public class PartialGroup {
             if (newGroupIndex == -1) {                
                 //either need to add new group or do nothing (value = 0)
                 if (newValue != 0.0) {
-                    addGroup(ComputingMachine.calculateGroupExponent(newValue));
+                    addGroup(ComputingMachine.computeGroupExponent(newValue));
                     newGroupIndex = getGroupIndex(newValue);//group index changed
                     
 //                    System.out.println(" => create new group " + newGroupIndex);
@@ -259,7 +259,7 @@ public class PartialGroup {
             if (newGroupIndex == -1) {
                 if (newValue > 0) {
                     //need to add a group
-                    addGroup(ComputingMachine.calculateGroupExponent(newValue));
+                    addGroup(ComputingMachine.computeGroupExponent(newValue));
                     newGroupIndex = getGroupIndex(newValue);//group index changed
                     
 //                    System.out.println("  => create new group " + newGroupIndex);
@@ -288,7 +288,7 @@ public class PartialGroup {
         if (propensityValue == 0.0) {
             return -1;
         } else {
-            int exponent = ComputingMachine.calculateGroupExponent(propensityValue);
+            int exponent = ComputingMachine.computeGroupExponent(propensityValue);
             if (exponent >= minGroupExponent && exponent <= maxGroupExponent) {
                 return maxGroupExponent - exponent;
             } else {

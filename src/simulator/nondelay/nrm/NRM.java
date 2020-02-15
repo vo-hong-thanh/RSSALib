@@ -58,24 +58,9 @@ public class NRM implements IAlgorithm{
     private DataWriter dataWriter = null;
     private DataWriter performanceWriter = null;
     
-    public void config(long _maxStep, double _maxTime, double _logInterval, String modelFilename, boolean _isWriteable, String outputFilename) throws Exception {
-        if(_maxStep > 0)
-        {
-            maxStep = _maxStep;
-            simulationByStep = true;
-            maxTime = Double.MAX_VALUE;
-        }else
-        {
-            maxStep = 0;
-            simulationByStep = false;
-            maxTime = _maxTime;
-        }
-        
-        logInterval = _logInterval;
-        logPoint = _logInterval;
-
+    public void loadModel(String modelFilename) throws Exception {
         //build model
-        ComputingMachine.buildModel(modelFilename, states, reactions);
+        ComputingMachine.buildModelFromFile(modelFilename, states, reactions);
         
 //        // Run the garbage collector and get memory
 //        currentRuntime.gc();
@@ -89,19 +74,12 @@ public class NRM implements IAlgorithm{
 //        long afterDependecyGraph = (currentRuntime.totalMemory() - currentRuntime.freeMemory()) / 1024L;
         
         //build priority queue
-        buildHeap();
+        buildHeap();        
         
-        //writer
-        this.willWriteFile = _isWriteable;     
-        outputFile = outputFilename;
-        
-        //output
-        initalizeOutput();
-
 //        System.out.println("Allocated Memory (KB) before building Dependcy Graph: " + beforeDependecyGraph + " and after: " + afterDependecyGraph);
     }
 
-    public Hashtable<String, Vector<Double> > runSim() throws Exception {
+    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean _isWritingFile, String _outputFilename) throws Exception {
         System.out.println("Next Reaction Method (NRM)");
 //        System.out.println("---------------------------------------------------");
 //        System.out.println(" Model information ");  
@@ -115,7 +93,10 @@ public class NRM implements IAlgorithm{
 //        heap.printHeap();
 //        
 //        System.out.println("---------------------------------------------------");        
+        //initialize output
+        initalizeSimulation(_maxTime, 0, _logInterval, _isWritingFile, _outputFilename);
         
+        //do sim
         long simTime = 0;
         long searchTime = 0;
         long updateTime = 0;
@@ -134,7 +115,19 @@ public class NRM implements IAlgorithm{
             
             currentTime = n.getPutativeTime();
             if(!simulationByStep && currentTime >= maxTime)
+            {
                 currentTime = maxTime;
+                
+                if (currentTime >= logPoint) {
+                    //output
+                    simOutput.get("t").add(logPoint);                
+                    for (Species s : states.getSpeciesList()) {
+                        int pop = states.getPopulation(s);
+                        simOutput.get(s.getName()).add((double)pop);
+                    }
+                }
+                break;
+            }
 
             //update population
             ComputingMachine.executeReaction(fireReactionIndex, reactions, states);
@@ -191,10 +184,11 @@ public class NRM implements IAlgorithm{
                     int pop = simOutput.get(s.getName()).get(i).intValue();
                     dataWriter.write(pop +"\t");                    
                 }
-        
-                performanceWriter.writeLine("Time\tFiring\tRunTime\tSearchTime\tUpdateTime");
-                performanceWriter.writeLine(currentTime + "\t" + firing + "\t" +simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
+                dataWriter.writeLine();
             }
+            
+            performanceWriter.writeLine("Time\tFiring\tRunTime\tSearchTime\tUpdateTime");
+            performanceWriter.writeLine(currentTime + "\t" + firing + "\t" +simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
             
             dataWriter.flush();
             dataWriter.close();
@@ -278,10 +272,28 @@ public class NRM implements IAlgorithm{
 //        heap.printHeap();
     }
     
-    private void initalizeOutput() {
+    private void initalizeSimulation(double _maxTime, long _maxStep, double _logInterval, boolean __isWritingFile, String _outputFilename) {
+        if(_maxStep > 0){
+            maxStep = _maxStep;
+            simulationByStep = true;
+            maxTime = Double.MAX_VALUE;
+        }
+        else{
+            maxStep = 0;
+            simulationByStep = false;
+            maxTime = _maxTime;
+        }
+        
+        logInterval = _logInterval;
+        logPoint = _logInterval; 
+        
+        //writer
+        this.willWriteFile = __isWritingFile;     
+        outputFile = _outputFilename;
+               
+        //output
         simOutput = new Hashtable<String, Vector<Double> >(); 
         
-        //output
         simOutput.put("t", new Vector<>());        
         Species[] species = states.getSpeciesList();
         for(Species s : species){
