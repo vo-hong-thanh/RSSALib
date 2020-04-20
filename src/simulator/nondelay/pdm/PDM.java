@@ -20,9 +20,10 @@ import model.rates.MassActionKinetics;
 import simulator.IAlgorithm;
 
 /**
- *
- * @author vo
- */
+ * PDM: Partial propensity Direct method
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PDM implements IAlgorithm{
     //random generator
     private Random rand = new Random();

@@ -24,9 +24,10 @@ import simulator.nondelay.pdm.PartialGroup;
 import simulator.nondelay.pdm.PartialNode;
 
 /**
- *
- * @author vo
- */
+ * SPDM: Sorting PDM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class SPDM implements IAlgorithm{
     //random generator
     private Random rand = new Random();

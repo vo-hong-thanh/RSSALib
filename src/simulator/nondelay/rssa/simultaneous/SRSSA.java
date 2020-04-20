@@ -20,9 +20,10 @@ import utils.ComputingMachine;
 import utils.DataWriter;
 
 /**
- *
- * @author Vo
- */
+ * SRSSA: Simultaneous RSSA
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class SRSSA{
     //model info
     private StateList states = new StateList();

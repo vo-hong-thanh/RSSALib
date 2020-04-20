@@ -7,9 +7,10 @@ package simulator.nondelay.pdm;
 import model.Species;
 
 /**
- *
- * @author vo
- */
+ * PartialNode: Data structure for PDM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PartialNode {
     private Species species; //species and
     private int reactionIndex; //index of reaction reaction involved in propensity 

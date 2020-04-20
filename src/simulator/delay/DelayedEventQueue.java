@@ -7,9 +7,10 @@ package simulator.delay;
 import java.util.LinkedList;
 
 /**
- *
- * @author vo
- */
+ * DelayedEventQueue: Delayed Event Queue
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class DelayedEventQueue {
     private LinkedList<DelayedReactionTime> eventQueue;
 

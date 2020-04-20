@@ -5,9 +5,10 @@
 package simulator.delay;
 
 /**
- *
- * @author Vo
- */
+ * DelayedReactionTime: Delayed Reaction Time
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class DelayedReactionTime implements Comparable {
     int reactionIndex;
     double delay;

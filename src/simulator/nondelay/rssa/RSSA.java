@@ -19,9 +19,10 @@ import model.rates.InhibitoryHillKinetics;
 import simulator.IAlgorithm;
 
 /**
- *
- * @author Hong Thanh
- */
+ * RSSA: Rejection-based stochastic simulation algorithm
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class RSSA implements IAlgorithm{
     //random generator
     private Random rand = new Random();

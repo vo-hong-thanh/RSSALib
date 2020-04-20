@@ -21,9 +21,10 @@ import simulator.IAlgorithm;
 import simulator.nondelay.rssa.RSSANode;
 
 /**
- *
- * @author Hong Thanh
- */
+ * RSSA_Lookup: RSSA with lookup search
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class RSSA_LookupSearch implements IAlgorithm{
     //random generator
     private Random rand = new Random();

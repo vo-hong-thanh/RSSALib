@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import model.Species;
 
 /**
- *
- * @author vo
- */
+ * PartialRSSAGroup: Data structure for PRSSA
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PartialRSSAGroup {    
     private Species species; //groupping species
         

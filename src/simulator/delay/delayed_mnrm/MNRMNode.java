@@ -6,9 +6,10 @@
 package simulator.delay.delayed_mnrm;
 
 /**
- *
- * @author Hong Thanh
- */
+ * MNRMNode
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class MNRMNode implements Comparable{
     private int reactionIndex; //key
     

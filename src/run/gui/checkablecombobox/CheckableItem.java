@@ -6,9 +6,10 @@
 package run.gui.checkablecombobox;
 
 /**
- *
- * @author vot2
- */
+ * CheckableItem: Create checkable item for checkbox
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class CheckableItem {
     public final String text;
     public boolean selected;

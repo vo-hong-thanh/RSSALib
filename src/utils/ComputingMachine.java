@@ -28,9 +28,10 @@ import model.rates.MMKinetics;
 import model.rates.MassActionKinetics;
 
 /**
- *
- * @author vot2
- */
+ * ComputingMachine: utility for computing
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class ComputingMachine {    
     public static final double BASE = 2;
     
@@ -551,6 +552,10 @@ public class ComputingMachine {
         }
         else{
             //non-numeric data - look up it from parameters
+            if(parameters.get(paraName) == null)
+            {
+                throw new RuntimeException(paraName + " has not been defined");
+            }
             paraValue = parameters.get(paraName);
         }
         return paraValue;

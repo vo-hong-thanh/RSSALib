@@ -10,31 +10,51 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 /**
- *
- * @author Hong Thanh
- */
+ * ReactionList: list of reactions 
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class ReactionList {
     private Hashtable<Integer, Reaction> reactionCollection ;
     
+    /**
+    * Create a list of reactions 
+    */
     public ReactionList()
     {
         reactionCollection = new Hashtable<Integer, Reaction>();
     }
 
+    /**
+    * Add a reaction to the list
+    * @param r: reaction to be added
+    */
     public void addReaction(Reaction r)
     {
         reactionCollection.put(r.getReactionIndex(), r);
     }
 
+    
+    /**
+    * @return the number of reactions in the list
+    */
     public int getLength() {
         return reactionCollection.size();
     }
 
+    /**
+     * get a reaction in the list
+     * @param index:  index of the reaction
+    * @return the reaction at the index 
+    */
     public Reaction getReaction(int index)
     {
         return reactionCollection.get(index);
     }
     
+    /**
+    * @return the list of reactions 
+    */
     public Reaction[] getReactionList() {
         Reaction[] list = new Reaction[reactionCollection.size()];
         int index = 0;

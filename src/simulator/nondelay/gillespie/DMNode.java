@@ -6,9 +6,10 @@
 package simulator.nondelay.gillespie;
 
 /**
- *
- * @author HongThanh
- */
+ * DMNode: data structure for DM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class DMNode implements Comparable{
     private int reactionIndex;
     private double propensity;

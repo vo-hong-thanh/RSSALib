@@ -7,10 +7,6 @@ package utils.random;
 import cern.jet.math.Arithmetic;
 import java.util.Random;
 
-/**
- * @author vo
- */
-
 /*
  * The Binomial generator is adapted from COLT engine
  */
@@ -43,6 +39,12 @@ import java.util.Random;
  * - randomGenerator ... (0,1)-Uniform engine * *
  *****************************************************************
  */
+
+/**
+ * BinomialGenerator: utility for generating Binomial random number
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class BinomialGenerator {
     // cache vars for method generateBinomial(...)
     private int n_last = -1, n_prev = -1;

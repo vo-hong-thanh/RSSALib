@@ -9,17 +9,24 @@ import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
- * @author Hong Thanh
- */
+ * MStateList: a multi-lists of state, which is used for simultaneous RSSA simulation
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class MStateList {
 
     private ConcurrentHashMap<Species, ArrayList<Integer> > speciesCollection;
 
+    /**
+     * Create a a multi-lists of state
+     */
     public MStateList() {
         speciesCollection = new ConcurrentHashMap<Species, ArrayList<Integer>>();
     }
 
+    /**
+     * @return a list of species in the state 
+    */    
     public Species[] getSpeciesList()
     {
         Species[] list = new Species[speciesCollection.size()];
@@ -30,6 +37,9 @@ public class MStateList {
         return list;
     }
     
+    /**
+     * @return a species with a given name 
+    */ 
     public Species getSpecies(String name)
     {
         for (Enumeration<Species> sp = speciesCollection.keys(); sp.hasMoreElements();) {
@@ -41,21 +51,41 @@ public class MStateList {
         return null;
     }
     
+    /**
+     * add species with its population to the multi-list
+     * @param s
+     * @param populationList
+    */ 
     public void addSpecies(Species s, ArrayList<Integer> populationList)
     {
         speciesCollection.put(s, populationList);
     }
     
+    /**
+     * update population of species s in multi-lists of state
+     * @param s: species s
+     * @param position: its position in the multi-lists 
+     * @param newPopulation: its new population
+    */ 
     public void updatePopulation(Species s, int position, int newPopulation)
     {
         speciesCollection.get(s).set(position, newPopulation);
     }
     
+    /**
+     * get population of species s in multi-lists of state
+     * @param s: species s
+     * @param position: its position in the multi-lists 
+     * @return population of s
+    */ 
     public int getPopulation(Species s, int position)
     {
         return speciesCollection.get(s).get(position);
     }
 
+    /**
+     * @return name of species in multi-lists
+    */ 
     public String getSpeciesNameString()
     {
         StringBuilder result = new StringBuilder();

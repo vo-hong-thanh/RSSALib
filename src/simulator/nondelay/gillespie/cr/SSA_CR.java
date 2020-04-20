@@ -18,9 +18,10 @@ import java.util.Vector;
 import simulator.IAlgorithm;
 
 /**
- *
- * @author vo
- */
+ * SSA_CR: DM with composition-rejection search
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class SSA_CR  implements IAlgorithm{
     //random generator
     private Random rand = new Random();

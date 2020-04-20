@@ -5,9 +5,10 @@
 package model;
 
 /**
- *
- * @author Vo
- */
+ * Delayed reaction types
+ * @author Vo Hong Thanh
+ * @version 1.0 
+*/
 public interface DELAY_TYPE {
     public static String NODELAY = "ND"; 
     public static String CONSUMING = "CD";    

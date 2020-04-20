@@ -22,9 +22,10 @@ import simulator.delay.DelayedEventQueue;
 import simulator.delay.DelayedReactionTime;
 
 /**
- *
- * @author Vo
- */
+ * DelayedMNRM: Delayed Modified Next Reaction Method
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class DelayedMNRM implements IAlgorithm{
     //random generator
     private Random rand = new Random();

@@ -24,9 +24,10 @@ import simulator.nondelay.pdm.PartialGroup;
 import simulator.nondelay.pdm.PartialNode;
 
 /**
- *
- * @author vo
- */
+ * PSSA_CR: PDM with Composition-Rejection
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PSSA_CR implements IAlgorithm{
     //random generator
     private Random rand = new Random();

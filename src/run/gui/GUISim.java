@@ -50,7 +50,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import run.gui.checkablecombobox.CheckableItem;
 import run.gui.checkablecombobox.CheckedComboBox;
-import run.gui.separatorCombobox.SeparatorComboBoxRenderer;
+import run.gui.separatorcombobox.SeparatorComboBoxRenderer;
+import sbml.SBMLConverter;
 import simulator.IAlgorithm;
 import simulator.delay.delayed_gillespie.ModifiedDelayedDM;
 import simulator.delay.delayed_mnrm.DelayedMNRM;
@@ -69,9 +70,10 @@ import simulator.nondelay.rssa.lookup.RSSA_LookupSearch;
 import simulator.nondelay.rssa.tree_search.RSSA_BinarySearch;
 
 /**
- *
- * @author vot2
- */
+ * GUISim: GUI interface for RSSALib
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class GUISim extends javax.swing.JFrame {
 
     private JFileChooser fileChooser;
@@ -176,8 +178,10 @@ public class GUISim extends javax.swing.JFrame {
         mnuLoad = new javax.swing.JMenuItem();
         mnuSave = new javax.swing.JMenuItem();
         mnuSaveAs = new javax.swing.JMenuItem();
-        mnuClear = new javax.swing.JPopupMenu.Separator();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        jSeparator = new javax.swing.JPopupMenu.Separator();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        mnuClear = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         mnuExit = new javax.swing.JMenuItem();
         mnuEdit = new javax.swing.JMenu();
@@ -215,6 +219,7 @@ public class GUISim extends javax.swing.JFrame {
         jToolBar1.setRollover(true);
         jToolBar1.setToolTipText("");
 
+        btnLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/figs/open.png"))); // NOI18N
         btnLoad.setToolTipText("Load model");
         btnLoad.setFocusable(false);
         btnLoad.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -227,6 +232,7 @@ public class GUISim extends javax.swing.JFrame {
         });
         jToolBar1.add(btnLoad);
 
+        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/figs/save.png"))); // NOI18N
         btnSave.setToolTipText("Save model");
         btnSave.setFocusable(false);
         btnSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -308,16 +314,28 @@ public class GUISim extends javax.swing.JFrame {
             }
         });
         menuFile.add(mnuSaveAs);
-        menuFile.add(mnuClear);
+        menuFile.add(jSeparator);
 
-        jMenuItem1.setForeground(java.awt.Color.black);
-        jMenuItem1.setText("Clear");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setForeground(new java.awt.Color(0, 0, 0));
+        jMenuItem2.setMnemonic(KeyEvent.VK_B);
+        jMenuItem2.setText("SBML converter");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+                mnuLoadandConvertSBML(evt);
             }
         });
-        menuFile.add(jMenuItem1);
+        menuFile.add(jMenuItem2);
+        menuFile.add(jSeparator4);
+
+        mnuClear.setForeground(java.awt.Color.black);
+        mnuClear.setText("Clear");
+        mnuClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuClearActionPerformed(evt);
+            }
+        });
+        menuFile.add(mnuClear);
         menuFile.add(jSeparator1);
 
         mnuExit.setForeground(java.awt.Color.black);
@@ -423,7 +441,6 @@ public class GUISim extends javax.swing.JFrame {
                                 .addComponent(displayDynamics, javax.swing.GroupLayout.PREFERRED_SIZE, 524, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
@@ -721,14 +738,14 @@ public class GUISim extends javax.swing.JFrame {
         displayAlgorithm();
     }//GEN-LAST:event_chkDelayActionPerformed
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+    private void mnuClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuClearActionPerformed
         // TODO add your handling code here:
         txtDisplayText.setText("");
         lblModelName.setText("[Model]");
         document = null;
         findingInfo = null;
         startFindingIndex = 0;
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    }//GEN-LAST:event_mnuClearActionPerformed
 
     private void mnuSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuSaveActionPerformed
         try {
@@ -743,6 +760,39 @@ public class GUISim extends javax.swing.JFrame {
         // TODO add your handling code here:
         displayAlgorithm();
     }//GEN-LAST:event_dropboxAlgorithmActionPerformed
+
+    private void mnuLoadandConvertSBML(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuLoadandConvertSBML
+        // TODO add your handling code here:
+        fileChooser.setDialogTitle("Load SBML model");
+        fileChooser.setFileFilter(new ModelFileFilter(".xml", "SBML model file"));
+        int result = fileChooser.showOpenDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedSBML = fileChooser.getSelectedFile();
+            try
+            {
+                String convertedFile = SBMLConverter.convert(selectedSBML.getName());
+                
+                openedFile = new File(convertedFile);                        
+                lblModelName.setText(convertedFile);
+                BufferedReader reader = new BufferedReader(new FileReader(openedFile));
+
+                txtDisplayText.read(reader, null);
+                document = txtDisplayText.getDocument();
+                registerDocument(document);
+
+                reader.close();
+
+                findingInfo = null;
+                startFindingIndex = 0;
+            }catch(Exception ex)
+            {
+                //Logger.getLogger(GUISim.class.getName()).log(Level.SEVERE, null, ex);                
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error reading SBML", JOptionPane.ERROR_MESSAGE);
+                txtSimulationTime.requestFocusInWindow();
+            }
+        }
+    }//GEN-LAST:event_mnuLoadandConvertSBML
 
     /**
      * @param args the command line arguments
@@ -799,16 +849,18 @@ public class GUISim extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JLabel lblModelName;
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenuItem mnuAbout;
-    private javax.swing.JPopupMenu.Separator mnuClear;
+    private javax.swing.JMenuItem mnuClear;
     private javax.swing.JMenuItem mnuCopy;
     private javax.swing.JMenuItem mnuCopyAll;
     private javax.swing.JMenuItem mnuCut;
@@ -1088,7 +1140,7 @@ public class GUISim extends javax.swing.JFrame {
 
 //        System.out.println("Inside find text with data length " + modelData.length()  );
         if (modelData.trim().equals("")) {
-            JOptionPane.showMessageDialog(this, "Model is Empty");
+            JOptionPane.showMessageDialog(this, "Model is empty");
             findingInfo = null;
             return;
         }

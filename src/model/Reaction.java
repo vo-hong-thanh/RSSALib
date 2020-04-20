@@ -10,61 +10,107 @@ import java.util.HashSet;
 import model.rates.IRateLaw;
 import model.rates.MassActionKinetics;
 /**
- *
- * @author Hong Thanh
- */
+ * Reaction
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class Reaction {
     private int reactionIndex;
     private ArrayList<Term> reactants;
     private ArrayList<Term> products;
     
+    /**
+     * reaction rate
+     */
     private IRateLaw rate;
     
+    /**
+     * delay 
+     */
     private DelayInfo delay;
         
+    
+    /**
+     * dependent reactions
+     */
     private HashSet<Integer> dependent = new HashSet<Integer>();
 
+    /**
+     * Create a new reaction 
+     * @param index
+     * @param reactants
+     * @param products
+     */
     public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products) {
         this.reactionIndex = index;
         this.reactants = reactants;
         this.products = products;        
         //default mass-action kinetics
-        rate = new MassActionKinetics(0);
+        this.rate = new MassActionKinetics(0);
         
         //no delay
-        delay = new DelayInfo(DELAY_TYPE.NODELAY, 0);
-    }    
+        this.delay = new DelayInfo(DELAY_TYPE.NODELAY, 0);
+    } 
     
-    public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products, IRateLaw _rate) {
+    /**
+     * Create a new reaction 
+     * @param index
+     * @param reactants
+     * @param products
+     * @param rate
+     */    
+    public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products, IRateLaw rate) {
         this.reactionIndex = index;
         this.reactants = reactants;
         this.products = products;   
-        rate = _rate;
+        this.rate = rate;
         
         //no delay
-        delay = new DelayInfo(DELAY_TYPE.NODELAY, 0);
+        this.delay = new DelayInfo(DELAY_TYPE.NODELAY, 0);
     }
     
-    public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products, IRateLaw _rate, DelayInfo _delay) {
+    /**
+     * Create a new reaction 
+     * @param index
+     * @param reactants
+     * @param products
+     * @param rate
+     * @param delay
+     */   
+    public Reaction(int index, ArrayList<Term> reactants, ArrayList<Term> products, IRateLaw rate, DelayInfo delay) {
         this.reactionIndex = index;
         this.reactants = reactants;
         this.products = products;   
-        rate = _rate;
-        delay = _delay;
+        this.rate = rate;
+        this.delay = delay;
     }
     
+    /**
+     * @return reaction index
+    */
     public int getReactionIndex() {
         return reactionIndex;
     }
     
+    /**
+     * @return reactants of the reaction
+    */
     public ArrayList<Term> getReactants() {
         return reactants;
     }
     
+    /**
+     * @return products of the reaction
+    */
     public ArrayList<Term> getProducts() {
         return products;
     }
 
+    /**
+     * check reactants of the reaction contian a species
+     * @param s
+     * @return true if the species is its reactant, otherwise false
+    */
     public boolean reactantsContainSpecies(Species s) {
         for (Term r : reactants) {
             if (r.getSpecies().equals(s)) {
@@ -74,6 +120,11 @@ public class Reaction {
         return false;
     }
 
+    /**
+     * check products of the reaction contian a species
+     * @param s
+     * @return true if the species is its products, otherwise false
+    */    
     public boolean productsContainSpecies(Species s) {
         for (Term pr : products) {
             if (pr.getSpecies().equals(s)) {
@@ -83,6 +134,12 @@ public class Reaction {
         return false;
     }
 
+    
+    /**
+     * check if a reaction affect other reaction 
+     * @param o: the other reaction 
+     * @return true if the current reaction affects o, otherwise false
+    */    
     public boolean affect(Reaction o) {
         boolean isAffect = false;
 
@@ -103,6 +160,11 @@ public class Reaction {
         return isAffect;
     }
     
+    /**
+     * check if a species is a catalyst
+     * @param t: the species with its stoichiometric coefficient 
+     * @return true if t is a catalyst of the current reaction, otherwise false
+    */ 
     public boolean isCatalyst(Term t) {
         boolean result = false;
 
@@ -120,18 +182,31 @@ public class Reaction {
         return result;
     }
 
+    /**
+     * add a reaction into to list of its dependence
+     * @param index: the index of the dependent reaction     
+    */ 
     public void addDependentReaction(int index) {
         dependent.add(index);
     }
 
+    /**
+     * @return the list of dependent reactions
+    */ 
     public HashSet<Integer> getDependent() {
         return dependent;
     }
 
+    /**
+     * @return rate law of the reaction
+    */ 
     public IRateLaw getRateLaw(){
         return rate;   
     }
     
+    /**
+     * @return delay information of the reaction
+    */ 
     public DelayInfo getDelayInfo(){
         return delay;
     }

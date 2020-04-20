@@ -10,9 +10,10 @@ import model.Species;
 import model.StateList;
 
 /**
- *
- * @author vot2
- */
+ * InhibitoryHillKinetics: Inhibitory Hill Kinetics
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class InhibitoryHillKinetics implements IRateLaw {
     private double baseRate;
     private double n;

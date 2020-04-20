@@ -19,9 +19,10 @@ import model.rates.InhibitoryHillKinetics;
 import simulator.IAlgorithm;
 
 /**
- *
- * @author Hong Thanh
- */
+ * ModifiedRSSA: Modified RSSA
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class ModifiedRSSA implements IAlgorithm{
     //random generator
     private Random rand = new Random();

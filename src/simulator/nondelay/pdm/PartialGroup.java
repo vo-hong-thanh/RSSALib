@@ -12,9 +12,10 @@ import model.Species;
 import utils.ComputingMachine;
 
 /**
- *
- * @author vo
- */
+ * PDM: Data structure for PDM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PartialGroup {    
     private Species species; //groupping species
         

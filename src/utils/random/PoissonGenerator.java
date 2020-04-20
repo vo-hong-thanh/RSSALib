@@ -7,9 +7,8 @@ package utils.random;
 import cern.jet.math.Arithmetic;
 import java.util.Random;
 
-/**
- *
- * @author vo
+/*
+ * The Poisson generator is adapted from COLT engine
  */
 
 /**
@@ -27,6 +26,11 @@ import java.util.Random;
  ******************************************************************
  */
 
+/**
+ * PoissonGenerator: utility for generating Poisson random number
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PoissonGenerator {
     // precomputed and cached values (for performance only)
     // cache for < SWITCH_MEAN

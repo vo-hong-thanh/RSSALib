@@ -21,9 +21,10 @@ import simulator.IAlgorithm;
 import simulator.nondelay.rssa.RSSANode;
 
 /**
- *
- * @author Hong Thanh
- */
+ * RSSA_BinarySearch: RSSA with tree-based search
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class RSSA_BinarySearch implements IAlgorithm{
     //random generator
     private Random rand = new Random();

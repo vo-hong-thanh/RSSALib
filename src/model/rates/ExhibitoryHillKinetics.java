@@ -10,9 +10,10 @@ import model.Species;
 import model.StateList;
 
 /**
- *
- * @author vot2
- */
+ * ExhibitoryHillKinetics: Exhibitory Hill Kinetics
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class ExhibitoryHillKinetics implements IRateLaw {
     private Species protein;
     private double baseRate;

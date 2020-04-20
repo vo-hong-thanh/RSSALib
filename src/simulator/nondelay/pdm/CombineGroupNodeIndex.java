@@ -5,9 +5,10 @@
 package simulator.nondelay.pdm;
 
 /**
- *
- * @author vo
- */
+ * CombineGroupNodeIndex: Data structure for PDM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class CombineGroupNodeIndex {
     private int groupIndex;
     private int nodeIndex;

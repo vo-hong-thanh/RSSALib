@@ -26,9 +26,10 @@ import simulator.nondelay.rssa.RSSANode;
 
 
 /**
- *
- * @author Hong Thanh
- */
+ * ModifiedDelayedRSSA: Modified Delayed RSSA
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class ModifiedDelayedRSSA implements IAlgorithm {
     //random generator
     private Random rand = new Random();

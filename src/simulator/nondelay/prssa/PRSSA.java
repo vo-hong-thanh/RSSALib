@@ -7,7 +7,6 @@ package simulator.nondelay.prssa;
 import utils.ComputingMachine;
 import utils.DataWriter;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
@@ -23,9 +22,10 @@ import simulator.nondelay.pdm.CombineGroupNodeIndex;
 
 
 /**
- *
- * @author vo
- */
+ * PRSSA: Partial propensity RSSA
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PRSSA implements IAlgorithm{
     //random generator
     private Random rand = new Random();

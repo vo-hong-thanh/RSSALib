@@ -6,9 +6,10 @@
 package simulator.nondelay.nrm;
 
 /**
- *
- * @author Hong Thanh
- */
+ * NRMNode: Data structure for NRM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class NRMNode implements Comparable{
     private int reactionIndex; //key
     

@@ -10,9 +10,10 @@ import model.Species;
 import model.StateList;
 
 /**
- *
- * @author vot2
- */
+ * MMKinetics: Michaelis–Menten kinetics
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class MMKinetics implements IRateLaw{
     private double k;
     private double v;

@@ -18,9 +18,10 @@ import simulator.IAlgorithm;
 import simulator.nondelay.gillespie.DMNode;
 
 /**
- *
- * @author HongThanh
- */
+ * SDM: Sorting DM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class SDM implements IAlgorithm{
     //random generator
     private Random rand = new Random();

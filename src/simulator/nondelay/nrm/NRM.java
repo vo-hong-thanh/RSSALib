@@ -17,9 +17,10 @@ import java.util.Vector;
 import simulator.IAlgorithm;
 
 /**
- *
- * @author HongThanh
- */
+ * NRM: Next reaction method
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class NRM implements IAlgorithm{
     //random generator
     private Random rand = new Random();

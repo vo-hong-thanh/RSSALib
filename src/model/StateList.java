@@ -9,20 +9,32 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 /**
- *
- * @author Hong Thanh
- */
+ * StateList: list of species and its population 
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class StateList {
     private Hashtable<Species, Integer> speciesCollection;
 
+    /**
+    * create a state    
+    */
     public StateList() {
         speciesCollection = new Hashtable<Species, Integer>();
     }
 
+    /**
+    * add a new species and its population
+    * @param s
+    * @param newPopulation 
+    */
     public void addSpecies(Species s, int newPopulation){
         speciesCollection.put(s, newPopulation);
     }
     
+    /**
+    * @return a list of species in the state
+    */
     public Species[] getSpeciesList()
     {
         Species[] list = new Species[speciesCollection.size()];
@@ -33,6 +45,10 @@ public class StateList {
         return list;
     }
     
+    /**
+    * @return a species with a given name
+    * @param name
+    */    
     public Species getSpecies(String name)
     {
         for (Enumeration<Species> sp = speciesCollection.keys(); sp.hasMoreElements();) {
@@ -44,14 +60,27 @@ public class StateList {
         return null;
     }
     
+    /**
+     * update population of a species
+    * @param s
+    * @param newPopulation
+    */    
     public void updateSpecies(Species s, int newPopulation){
         speciesCollection.put(s, newPopulation);
     }
     
+    /**
+     * @return population of a species
+    * @param s
+    */    
     public int getPopulation(Species s){
         return speciesCollection.get(s);
     }
 
+    /**
+     * @return create a deep clone of the current state 
+     * @param source
+    */    
     public static StateList makeClone(StateList source){
         StateList newStateList = new StateList();
                
@@ -62,6 +91,9 @@ public class StateList {
         return newStateList;
     }
        
+    /**
+     * @return name of species in the state     
+    */  
     public String getSpeciesNameString(){
         StringBuilder result = new StringBuilder();
         for (Enumeration<Species> s = speciesCollection.keys(); s.hasMoreElements();) {
@@ -71,6 +103,9 @@ public class StateList {
         return result.toString();
     }
     
+    /**
+     * @return name of species and it population in the state     
+    */  
     public String getSpeciesPopulationString() {
         StringBuilder result = new StringBuilder();
         for (Enumeration<Species> s = speciesCollection.keys(); s.hasMoreElements();) {

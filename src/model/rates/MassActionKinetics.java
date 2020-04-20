@@ -9,9 +9,10 @@ import model.MStateList;
 import model.StateList;
 
 /**
- *
- * @author vot2
- */
+ * MassActionKinetics: Mass-action kinetics
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class MassActionKinetics implements IRateLaw {
     private double k;
 

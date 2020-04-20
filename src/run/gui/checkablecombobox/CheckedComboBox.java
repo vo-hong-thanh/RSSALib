@@ -15,9 +15,10 @@ import javax.swing.*;
 import javax.swing.plaf.basic.ComboPopup;
 
 /**
- *
- * @author vot2
- */
+ * CheckedComboBox: Combo box with checkable iterm
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class CheckedComboBox<E extends CheckableItem> extends JComboBox<E> {
     private boolean keepOpen;
     private transient ActionListener listener;

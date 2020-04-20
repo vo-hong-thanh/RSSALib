@@ -25,9 +25,10 @@ import simulator.nondelay.gillespie.DMNode;
 
 
 /**
- *
- * @author Vo
- */
+ * ModifiedDelayedDM: Modified Delayed DM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class ModifiedDelayedDM implements IAlgorithm{
     //random generator
     private Random rand = new Random();

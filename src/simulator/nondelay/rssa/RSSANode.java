@@ -6,9 +6,10 @@
 package simulator.nondelay.rssa;
 
 /**
- *
- * @author HongThanh
- */
+ * RSSANode: Data structure for RSSA
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class RSSANode {
     private int reactionIndex;
     private double min_propensity; //reflecting change 

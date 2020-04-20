@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 /**
- *
- * @author vo
- */
+ * CRBlock: Data structure for SSA-CR
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class CRBlock {
     private double groupPropensitySum;
     

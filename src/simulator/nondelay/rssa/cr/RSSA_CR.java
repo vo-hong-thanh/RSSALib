@@ -23,9 +23,10 @@ import simulator.IAlgorithm;
 import simulator.nondelay.rssa.RSSANode;
 
 /**
- *
- * @author vo
- */
+ * RSSA_CR: RSSA with Composition-Rejection serach
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class RSSA_CR implements IAlgorithm{
     //random generator
     private Random rand = new Random();

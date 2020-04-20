@@ -2,7 +2,11 @@ package simulator.nondelay.nrm;
 
 import java.util.Hashtable;
 
-
+/**
+ * BinaryHeap: Binary heap for NRM
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class BinaryHeap {
     //heap data
     private NRMNode[] data;

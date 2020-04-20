@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 /**
- *
- * @author vo
- */
+ * CRPartialNodeBlock: Data structure for PSSa-CR
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class CRPartialNodeBlock {
     private double groupPropensitySum;
     

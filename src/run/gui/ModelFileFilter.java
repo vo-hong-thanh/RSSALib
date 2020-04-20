@@ -9,9 +9,10 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 /**
- *
- * @author vot2
- */
+ * ModelFileFilter: File filter
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class ModelFileFilter extends FileFilter{
     private String extension;
     private String Description;

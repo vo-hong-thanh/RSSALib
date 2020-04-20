@@ -9,10 +9,23 @@ import model.MStateList;
 import model.StateList;
 
 /**
- *
- * @author vot2
- */
+ * IRateLaw: kinetic rate of reaction
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public interface IRateLaw {
+    /**
+ * @return a value of the rate
+ * @param states: current state of the biochemical system
+ *  
+*/
     public double evaluateRate(StateList states);
+    
+        /**
+ * @return a value of the rate 
+ * @param states: multi-states
+ * @param position: position of states in the multi-states 
+ *  
+*/
      public double evaluateRate(MStateList states, int position);
 }

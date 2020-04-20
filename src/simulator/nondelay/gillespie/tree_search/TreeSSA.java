@@ -22,9 +22,10 @@ import simulator.nondelay.gillespie.DMNode;
 
 
 /**
- *
- * @author vo
- */
+ * TreeSSA: DM with Tree-based search
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class TreeSSA  implements IAlgorithm{
     //random generator
     private Random rand = new Random();

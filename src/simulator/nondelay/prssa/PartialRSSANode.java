@@ -7,9 +7,10 @@ package simulator.nondelay.prssa;
 import model.Species;
 
 /**
- *
- * @author vo
- */
+ * PartialRSSANode: Data structure for PRSSA
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public class PartialRSSANode {
     private Species species; //species and
     private int reactionIndex; //index of reaction reaction involved in propensity 
