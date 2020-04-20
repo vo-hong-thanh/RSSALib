@@ -1,10 +1,47 @@
 # RSSALib
 The Java-based implementation of the rejection-based stochastic simulation algorithm (RSSA) and a wide range of its improvements to accelerate the simulation and analysis of biochemical reactions. The simulation library supports reactions with complex kinetics and time delays, necessary to model complexities of reaction mechanisms. RSSALib provides both an application program interface (API) and a graphic user interface (GUI) to ease the set-up and visualization of the simulation results. 
 
-References:
+## 1) Background
+RSSA is an exact simulation [1] that accelerates simulation performance by reducing the average computations of reaction propensities. It is specifically tailored for reaction networks in which reaction propensities are time-consuming (e.g.,Michaelis-Menten kinetics, Hill kinetics) and delay-dependent. During the simulation of RSSA, many propensity updates are completely avoided. For doing that, RSSA abstracts the propensity of a reaction with an interval including all possible concrete propensity values. The propensity bounds of reactions are derived by specifying an arbitrary bound on the population of each species (the choice of which affects the performance, but not the exactness of the results). A detailed analysis of the choice of population bound is dicussed in [2]. RSSA uses these propensity bounds to select the next reaction firing in two steps. First, a candidate reaction is randomly chosen proportionally to its propensity upper bound. The selected candidate is then inspected through a rejection test to ensure that it fires with the same probability determined by SSA. The validation step postpones the evaluation of the exact propensity of the candidate reaction by exploiting its propensity lower bound. The exact propensity will be evaluated only if needed. The candidate reaction is either fired or (with low probability) rejected. If it is accepted to fire, only the state is updated, without recomputing the propensity except in uncommon cases. New propensity bounds are recomputed only when the population of a species exits the chosen bound. In case of rejection, a new candidate reaction is selected. 
 
-The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). Improvements and extensions of the original algorithm for dealing with diffrent aspects of practical biochemical reactions are in the book Marchetti et al. (2017). 
+## 2) Implementations and extensions
+* RSSA: an implementation of the original algorithm. Our implementation further improves the search of the next reaction by reusing the previously computed sum of propensities in the last step, hence improving the cache-friendliness.
 
-Thanh, V.H. et al. Journal of Chemical Physics 141, 134116. 2014. https://aip.scitation.org/doi/abs/10.1063/1.4896985.
+* Delayed RSSA (DelayedRSSA): is an extension of RSSA for biochemical reactions with time delays. Reactions with delays are divided into three types: 1) reactions with no delay (ND), 2) consuming delayed reactions (CD) and 3) nonconsuming delayed reactions (NCD). ND reactions update the populations of reactants and products instantly at initiation. For a CD reaction, when it occurs, the populations of its reactants change immediately at initiation while its products will be updated at completion. In other words, the update of populations of reactants and products of CD reactions is performed separately both at initiation and completion. For NCD reactions, the populations of reactants and products are updated only at completion. The reactants of a NCD reaction therefore can participate in a new reaction even if the reaction has not finished.
 
-Marchetti, L, Priami C., and Thanh, V.H. Simulation Algorithms for Computational Systems Biology, Springer. 2017. https://www.springer.com/gp/book/9783319631110.
+* Partial-propensity RSSA (PRSSA): The formulation employs the factorization of the mass-action propensity to factorize the propensity bounds of all reactions. PRSSA reduces the computational cost of the simulation proportional to the number of species, instead of number of reactions. 
+
+* RSSA with tree-based search (RSSA-Binary): The search of the next reaction is reduced to logartimic by employing a tree-based search method. Specifically, a (binary) tree in which its leave store propensities bounds of reactions and internal nodes store the sum value of their children is built. a tree traversal from the root to a leaf, which stores the next reactions, is preformed to select the next reaction firing. 
+
+* RSSA with composition-rejection search (RSSA-CR): The formulation employs the composition-rejection search method to reduce the search time complexity to be independent with the number of reactions. Reactions are partitioned into L groups  depending on their propensity bounds. The selection of the candidate reaction is composed of two steps. First, it selects the group proportional the sum of propensity bounds of reactions in that group. Then, the next reaction firing in the group is located by applying the acceptance-rejection. 
+
+* RSSA with table lookup search (RSSA-Lookup): The formulation uses the table lookup search, called the Alias method, for the selection of the candidate reaction. The search of the candidate reaction in RSSALookup is constant O(1), taking only one comparison and (at most) two table accesses. Its drawback, however, is that it requires to build the lookup tables which are linear time in the number of reactions.
+
+## 3) Model description and application interfaces
+A model supported by RSSALib consists of three parts: 1) the definition of constants, 2) initial populations of species, and 3) reactions between species accompanying with kinetic information.
+
+The definition of a constant c in the model is specified by simple assignment as: 
+> c = 1.0
+
+We use the same assignment for defining a species S and its initial population as:
+> S = 100
+
+We note that the population of a species should be an integer value. A reaction showing the interaction between species has the form
+\[ v_{1}^{-}S_{1} + ... + v_{n}^{-}S_{n} \text{ -> } v_{1}^{+}S_{1} + ... + v_{n}^{+}S_{n} , \text{rate [, delay]} \]
+where $v_i^{-}$ and $v_i^{+}$ denote the number of species $S_i$ that are consumed and produced by the reaction. The reaction is annotated with kinetics and time delay information. The reaction kinetics supported by RSSALib includes:
+\begin{itemize}
+	\item Mass-action kinetics (default reaction kinetics) where the rate is a constant value,
+	\item Michealis-Menten kinetics where the rate is $\text{MM}(S, V_{max}, K_m) = \frac{V_{max}S}{K_m + \#S}$ with $S$ denoting the substrate, the maximum rate $V_{max}$ and Michaelis constant $K_m$, and
+	\item Hill kinetics where rate is $\text{HILL}(S, c, n, s_0) = \frac{c}{1 + (s_0 / \#S)^n}$ for activation or $\text{rate} = \text{INHIBITORYHILL}(S, c, n, s_0) = \frac{c}{1 + (\#S / s_0)^n}$ for inhibition with $S$ denoting substrate,  Hill coefficient $n$, the substrate concentration occupying half of the binding sites $s_0$ and a constant $c$.     
+\end{itemize}
+The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. 
+
+## References:
+
+The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). An anaylsis of the algorithm is provided in [2]. Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in the book Marchetti et al. (2017).
+
+[1] Thanh, V.H. et al. (2014) Journal of Chemical Physics 141, 134116. https://aip.scitation.org/doi/abs/10.1063/1.4896985.
+
+[2] Thanh, V.H. et al. (2015) The Journal of chemical physics 142, 06B617_1. https://aip.scitation.org/doi/full/10.1063/1.4922923
+
+[3[ Marchetti, L, Priami C., and Thanh, V.H. Simulation Algorithms for Computational Systems Biology, Springer. 2017. https://www.springer.com/gp/book/9783319631110.
