@@ -19,7 +19,7 @@ RSSA is an exact simulation [1] that accelerates simulation performance by reduc
 
 ## 3) Model description and application interfaces
 ### a) Model description. 
-A model supported by RSSALib consists of three parts: 1) the definition of constants, 2) initial populations of species, and 3) reactions between species accompanying with kinetic information. RSSALib also provides a SBML converter to convert a reaction model in SBML format (http://sbml.org/Main_Page). The definition of a constant c in the model is specified by simple assignment as: 
+A model supported by RSSALib consists of three parts: 1) the definition of constants, 2) initial populations of species, and 3) reactions between species accompanying with kinetic information. RSSALib also provides a SBML converter, whose implementation used the JSBML (http://sbml.org/Software/JSBML), to convert a reaction model in SBML format (http://sbml.org/Main_Page). The definition of a constant c in the model is specified by simple assignment as: 
 > c = 1.0
 
 We use the same assignment for defining a species S and its initial population as:
