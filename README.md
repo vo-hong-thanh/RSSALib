@@ -32,9 +32,9 @@ A reaction showing the interaction between species has the general form:
 
 where stoichiometric coefficients v<sub>i</sub><sup>-</sup> and v<sub>i</sub><sup>+</sup>, respectively, denote the number of species S<sub>i</sub> that are consumed and produced by the reaction. The reaction is annotated with kinetics and time delay information. The reaction kinetics supported by RSSALib includes:
 
-- Mass-action kinetics (default reaction kinetics) where the rate is a constant value,
-- Michealis-Menten kinetics where the rate is MM(S, V<sub>max</sub>, K<sub>m</sub>) = V<sub>max</sub>S / (K<sub>m</sub> + S) with S denoting the substrate population, the maximum rate V<sub>max</sub> and Michaelis constant K<sub>m</sub>, and
-- Hill kinetics where rate is HILL(S, c, n, s<sub>0</sub>) = c/(1 + (s<sub>max</sub> / S)<sup>n</sup> for activation or INHIBITORYHILL(S, c, n, s<sub>0</sub>) = c/(1 + (S / s<sub>0</sub>)<sup>n</sup> for inhibition with S denoting substrate,  Hill coefficient n, the substrate concentration occupying half of the binding sites s<sub>0</sub> and a constant c.     
+- Mass-action kinetics (default reaction kinetics): the rate is a constant value,
+- Michealis-Menten kinetics denoted by the keyword 'MM': the rate is MM(S, V<sub>max</sub>, K<sub>m</sub>) = V<sub>max</sub>S / (K<sub>m</sub> + S) with S denoting the substrate population, the maximum rate V<sub>max</sub> and Michaelis constant K<sub>m</sub>, and
+- Hill kinetics: There are two versions of the Hill kinetics that are the exhibitory Hill denoted by the keyword 'HILL' and the inhibitory Hill denoted by 'INHIBITORYHILL', respectively. The exhibitory Hill rate is defined HILL(S, c, n, s<sub>0</sub>) = c/(1 + (s<sub>0</sub> / S)<sup>n</sup>), while the inhibitory Hill rate INHIBITORYHILL(S, c, n, s<sub>0</sub>) = c/(1 + (S / s<sub>0</sub>)<sup>n</sup>) in which S is the substrate, Hill coefficient n, the substrate concentration occupying half of the binding sites s<sub>0</sub> and a constant c.
 
 The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow:
 ![example model](figs/model_template.gif)
