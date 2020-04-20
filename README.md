@@ -40,11 +40,11 @@ The time delay is an optional part. There are two types of delayed reactions, i.
 ![example model](figs/model_template.gif?v=4&s=200)
 
 ### b) application iterfaces.
-A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. 
-RSSALib's GUI to simulate and visualize the simulation result is as follow
-![GUI ](figs/gui_rssa.gif?v=4&s=200)
-The GUI allows one to load the model and perform simulation with a click-and-run. The use of RSSALib for building stand-alone applications is shown as. 
-![GUI ](figs/api_rssa.gif?v=4&s=200)
+A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. The GUI allows one to load the model and perform simulation with a click-and-run. RSSALib's GUI to simulate and visualize the simulation result is as follow
+![GUI ](figs/gui_rssa.gif?v=4&s=100)
+
+The use of RSSALib for building stand-alone applications is shown as. 
+![GUI ](figs/api_rssa.gif?v=4&s=100)
 In this usage, we first load the biochemical model, and call the runSim() method of the simulator to perform the simulation.
 
 ## References:
