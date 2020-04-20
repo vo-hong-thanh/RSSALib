@@ -18,23 +18,31 @@ RSSA is an exact simulation [1] that accelerates simulation performance by reduc
 * RSSA with table lookup search (RSSA-Lookup): The formulation uses the table lookup search, called the Alias method, for the selection of the candidate reaction. The search of the candidate reaction in RSSALookup is constant O(1), taking only one comparison and (at most) two table accesses. Its drawback, however, is that it requires to build the lookup tables which are linear time in the number of reactions.
 
 ## 3) Model description and application interfaces
-A model supported by RSSALib consists of three parts: 1) the definition of constants, 2) initial populations of species, and 3) reactions between species accompanying with kinetic information.
-
-The definition of a constant c in the model is specified by simple assignment as: 
+### a) Model description. 
+A model supported by RSSALib consists of three parts: 1) the definition of constants, 2) initial populations of species, and 3) reactions between species accompanying with kinetic information. RSSALib also provides a SBML converter to convert a reaction model in SBML format (http://sbml.org/Main_Page). The definition of a constant c in the model is specified by simple assignment as: 
 > c = 1.0
 
 We use the same assignment for defining a species S and its initial population as:
 > S = 100
 
-We note that the population of a species should be an integer value. A reaction showing the interaction between species has the form
-\[ v_{1}^{-}S_{1} + ... + v_{n}^{-}S_{n} \text{ -> } v_{1}^{+}S_{1} + ... + v_{n}^{+}S_{n} , \text{rate [, delay]} \]
-where $v_i^{-}$ and $v_i^{+}$ denote the number of species $S_i$ that are consumed and produced by the reaction. The reaction is annotated with kinetics and time delay information. The reaction kinetics supported by RSSALib includes:
-\begin{itemize}
-	\item Mass-action kinetics (default reaction kinetics) where the rate is a constant value,
-	\item Michealis-Menten kinetics where the rate is $\text{MM}(S, V_{max}, K_m) = \frac{V_{max}S}{K_m + \#S}$ with $S$ denoting the substrate, the maximum rate $V_{max}$ and Michaelis constant $K_m$, and
-	\item Hill kinetics where rate is $\text{HILL}(S, c, n, s_0) = \frac{c}{1 + (s_0 / \#S)^n}$ for activation or $\text{rate} = \text{INHIBITORYHILL}(S, c, n, s_0) = \frac{c}{1 + (\#S / s_0)^n}$ for inhibition with $S$ denoting substrate,  Hill coefficient $n$, the substrate concentration occupying half of the binding sites $s_0$ and a constant $c$.     
-\end{itemize}
-The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. 
+We note that the population of a species should be an integer value. 
+
+A reaction showing the interaction between species has the general form:
+> v<sub>1</sub><sup>-</sup> S<sub>1</sub> + ... + v<sub>n</sub><sup>-</sup>S<sub>n</sub> -> v<sub>1</sub><sup>+</sup> S<sub>1</sub> + ... + v<sub>n</sub><sup>+</sup> S<sub>n</sub> , rate [, delay]
+
+where stoichiometric coefficients v<sub>i</sub><sup>-</sup> and v<sub>i</sub><sup>+</sup>, respectively, denote the number of species S<sub>i</sub> that are consumed and produced by the reaction. The reaction is annotated with kinetics and time delay information. The reaction kinetics supported by RSSALib includes:
+
+- Mass-action kinetics (default reaction kinetics) where the rate is a constant value,
+- Michealis-Menten kinetics where the rate is MM(S, V<sub>max</sub>, K<sub>m</sub>) = V<sub>max</sub>S / (K<sub>m</sub> + S) with S denoting the substrate population, the maximum rate V<sub>max</sub> and Michaelis constant K<sub>m</sub>, and
+- Hill kinetics where rate is HILL(S, c, n, s<sub>0</sub>) = c/(1 + (s<sub>max</sub> / S)<sup>n</sup> for activation or INHIBITORYHILL(S, c, n, s<sub>0</sub>) = c/(1 + (S / s<sub>0</sub>)<sup>n</sup> for inhibition with S denoting substrate,  Hill coefficient n, the substrate concentration occupying half of the binding sites s<sub>0</sub> and a constant c.     
+
+The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow
+![example model](figs/model_template.gif)
+
+### b) application iterfaces.
+A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. The use of RSSALib for building stand-alone applications is shown in Figure~\ref{fig:api_rssa}. In this usage, we first load the biochemical model, and call the runSim() method of the simulator to perform the simulation.
+
+Fig~\ref{fig:gui_rssa} shows the use of RSSALib's GUI to simulate and visualize the simulation result. The GUI allows one to load the model and perform simulation with a click-and-run. RSSALib can also be used as a developer API for building stand-alone applications. For this usage, we manually load the model, and call the runSim() method of the simulator to execute the simulation.
 
 ## References:
 
