@@ -61,7 +61,7 @@ All the simulation algorithms in RSSALib implemented these two methods, defined 
 
 ## References:
 
-The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). An anaylsis of the algorithm is provided in [2]. Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in the book Marchetti et al. (2017).
+The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. (2015) and Marchetti et al. (2017).
 
 [1] Thanh, V.H. et al. (2014) Journal of Chemical Physics 141, 134116. https://aip.scitation.org/doi/abs/10.1063/1.4896985.
 
