@@ -50,7 +50,14 @@ which will show:
 
 The use of RSSALib for building stand-alone applications is shown in the following code snippet
 ![GUI ](figs/api_rssa.gif)
-In this usage, we first load the biochemical model, and call the 'runSim()' method of the simulator to perform the simulation.
+In this usage, we first load the biochemical model by calling the 'loadModel()' method, whose input is the file contians the description of the model. The model is then executed by invoking the 'runSim()' method of the simulator. The method takes four parameters: 
+ 1. the simulation time: the maximum time the simulation algorithm will advance the model to.
+ 2. the logging time interval: the interval when the simulation is recorded
+ 3. the isWritingFile: to decide whether the ouput will be written to file
+ 4. the outputFilename: name of the file to write to if isWritingFile is true
+The runSim() method will return a vector contains the states at logging time. 
+
+All the simulation algorithms in RSSALib implemented these two methods, defined in the interface 'IAlgorithm'.
 
 ## References:
 
