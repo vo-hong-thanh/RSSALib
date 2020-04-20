@@ -37,12 +37,15 @@ where stoichiometric coefficients v<sub>i</sub><sup>-</sup> and v<sub>i</sub><su
 - Hill kinetics where rate is HILL(S, c, n, s<sub>0</sub>) = c/(1 + (s<sub>max</sub> / S)<sup>n</sup> for activation or INHIBITORYHILL(S, c, n, s<sub>0</sub>) = c/(1 + (S / s<sub>0</sub>)<sup>n</sup> for inhibition with S denoting substrate,  Hill coefficient n, the substrate concentration occupying half of the binding sites s<sub>0</sub> and a constant c.     
 
 The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow
-![example model](figs/model_template.gif)
+![example model](figs/model_template.gif?v=4&s=200)
 
 ### b) application iterfaces.
-A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. The use of RSSALib for building stand-alone applications is shown in Figure~\ref{fig:api_rssa}. In this usage, we first load the biochemical model, and call the runSim() method of the simulator to perform the simulation.
-
-Fig~\ref{fig:gui_rssa} shows the use of RSSALib's GUI to simulate and visualize the simulation result. The GUI allows one to load the model and perform simulation with a click-and-run. RSSALib can also be used as a developer API for building stand-alone applications. For this usage, we manually load the model, and call the runSim() method of the simulator to execute the simulation.
+A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. 
+RSSALib's GUI to simulate and visualize the simulation result is as follow
+![GUI ](figs/gui_rssa.gif?v=4&s=200)
+The GUI allows one to load the model and perform simulation with a click-and-run. The use of RSSALib for building stand-alone applications is shown as. 
+![GUI ](figs/api_rssa.gif?v=4&s=200)
+In this usage, we first load the biochemical model, and call the runSim() method of the simulator to perform the simulation.
 
 ## References:
 
