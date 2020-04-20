@@ -1,0 +1,15 @@
+#!/bin/bash
+# Script for running simulation
+
+echo "run RSSALib"
+
+java -d64 -Xms4g -Xmx4g -cp "./dist/RSSALib.jar:./dist/lib/*.*" run.cmd.CMDSim_DSMTS_4
+
+cp \(Data\)RSSA_00038-sbml-l3v1_*.txt DSMTS_4/data
+cp \(Perf\)RSSA_00038-sbml-l3v1_*.* DSMTS_4/performance
+
+rm \(Data\)RSSA_00038-sbml-l3v1_*.txt 
+rm \(Perf\)RSSA_00038-sbml-l3v1_*.* 
+
+echo "finish"
+

@@ -5,5 +5,11 @@ echo "run RSSALib"
 
 java -d64 -Xms4g -Xmx4g -cp "./dist/RSSALib.jar:./dist/lib/*.*" run.cmd.CMDSim_Lotka_Volterra
 
+cp \(Data\)RSSA_Lotka-Volterra_*.txt Lotka-Volterra/data
+cp \(Perf\)RSSA_Lotka-Volterra_*.* Lotka-Volterra/performance
+
+rm \(Data\)RSSA_Lotka-Volterra_*.txt 
+rm \(Perf\)RSSA_Lotka-Volterra_*.* 
+
 echo "finish"
 
