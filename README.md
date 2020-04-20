@@ -36,16 +36,21 @@ where stoichiometric coefficients v<sub>i</sub><sup>-</sup> and v<sub>i</sub><su
 - Michealis-Menten kinetics where the rate is MM(S, V<sub>max</sub>, K<sub>m</sub>) = V<sub>max</sub>S / (K<sub>m</sub> + S) with S denoting the substrate population, the maximum rate V<sub>max</sub> and Michaelis constant K<sub>m</sub>, and
 - Hill kinetics where rate is HILL(S, c, n, s<sub>0</sub>) = c/(1 + (s<sub>max</sub> / S)<sup>n</sup> for activation or INHIBITORYHILL(S, c, n, s<sub>0</sub>) = c/(1 + (S / s<sub>0</sub>)<sup>n</sup> for inhibition with S denoting substrate,  Hill coefficient n, the substrate concentration occupying half of the binding sites s<sub>0</sub> and a constant c.     
 
-The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow
+The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow:
 ![example model](figs/model_template.gif?v=4&s=200)
 
 ### b) application iterfaces.
-A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. The GUI allows one to load the model and perform simulation with a click-and-run. RSSALib's GUI to simulate and visualize the simulation result is as follow
+A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. The GUI allows one to load the model and perform simulation with a click-and-run. 
+
+RSSALib's GUI is called by executing command
+> java -cp -jar RSSALib.jar
+
+which will show:
 ![GUI ](figs/gui_rssa.gif?v=4&s=100)
 
-The use of RSSALib for building stand-alone applications is shown as. 
+The use of RSSALib for building stand-alone applications is shown in the following code snippet
 ![GUI ](figs/api_rssa.gif?v=4&s=100)
-In this usage, we first load the biochemical model, and call the runSim() method of the simulator to perform the simulation.
+In this usage, we first load the biochemical model, and call the 'runSim()' method of the simulator to perform the simulation.
 
 ## References:
 
