@@ -43,7 +43,7 @@ The time delay is an optional part. There are two types of delayed reactions, i.
 A biochemical reaction model can be simulated with RSSALib either through its click-and-run GUI or manually through its developer API. The GUI allows one to load the model and perform simulation with a click-and-run. 
 
 RSSALib's GUI is called by executing command
-> java -cp -jar RSSALib.jar
+> java -d64 -Xms4g -Xmx4g -cp "./dist/RSSALib.jar:./dist/lib/*.*" run.gui.GUISim
 
 which will show:
 ![GUI ](figs/gui_rssa.gif)
