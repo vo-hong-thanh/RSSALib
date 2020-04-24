@@ -52,18 +52,23 @@ which will show:
 
 The use of RSSALib for building stand-alone applications is shown in the following code snippet
 ![GUI ](figs/api_rssa.gif)
-In this usage, we first load the biochemical model by calling the 'loadModel()' method, whose input is the file contians the description of the model. The model is then executed by invoking the 'runSim()' method of the simulator. The method takes four parameters: 
+In this usage, we first load the biochemical model by calling the 'loadModel()' method, whose input is the file contians the description of the model. The model is then executed by invoking the 'runSim()' method of the simulator. All the simulation algorithms in RSSALib implemented these two methods, defined in the interface 'IAlgorithm'. These moethods have signatures:
+> public void loadModel(String modelFilename) throws Exception
+
+which parses the model in 'modelFilename'. An exception will be thrown if error occurs during the parsing.
+
+> public Hashtable<String, Vector<Double> > runSim(double simTime, double logInterval, boolean isWritingFile, String outputFilename) throws Exception;
+ 
+executes the simulation and returns a list of vectors containing snapshots of the state at logging points. It requires four parameters: 
  1. the simulation time: the maximum time the simulation algorithm will advance the model to.
- 2. the logging time interval: the interval when the simulation is recorded
- 3. the isWritingFile: to decide whether the ouput will be written to file
+ 2. the logging time: the interval when the simulation is recorded
+ 3. the isWritingFile: whether the ouput will be written to file
  4. the outputFilename: name of the file to write to if isWritingFile is true
-The runSim() method will return a vector contains the states at logging time. 
+ An exception will be thrown if if error occurs during simulation.
 
-All the simulation algorithms in RSSALib implemented these two methods, defined in the interface 'IAlgorithm'.
+## References and further readings:
 
-## References:
-
-The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. (2015) and Marchetti et al. (2017).
+The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. (2015) and Marchetti et al. (2017). 
 
 [1] Thanh, V.H. et al. (2014) Journal of Chemical Physics 141, 134116. https://aip.scitation.org/doi/abs/10.1063/1.4896985.
 
