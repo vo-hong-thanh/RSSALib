@@ -1,7 +1,0 @@
-#!/bin/bash
-# Script for running simulation
-
-echo "run RSSALib"
-
-java -d64 -Xms4g -Xmx4g -cp "./dist/RSSALib.jar:./dist/lib/*.*" run.cmd.CMDSim_Hes1
-
