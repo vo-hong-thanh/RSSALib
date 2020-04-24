@@ -15,7 +15,7 @@ RSSA is an exact simulation [1] that accelerates simulation performance by reduc
 
 * RSSA with composition-rejection search (RSSA-CR): The formulation employs the composition-rejection search method to reduce the search time complexity to be independent with the number of reactions. Reactions are partitioned into L groups  depending on their propensity bounds. The selection of the candidate reaction is composed of two steps. First, it selects the group proportional the sum of propensity bounds of reactions in that group. Then, the next reaction firing in the group is located by applying the acceptance-rejection. 
 
-* RSSA with table lookup search (RSSA-Lookup): The formulation uses the table lookup search, called the Alias method, for the selection of the candidate reaction. The search of the candidate reaction in RSSALookup is constant O(1), taking only one comparison and (at most) two table accesses. Its drawback, however, is that it requires to build the lookup tables which are linear time in the number of reactions.
+* RSSA with table lookup search (RSSA-Lookup): The formulation uses the table lookup search, called the Alias method, for the selection of the candidate reaction. The search of the candidate reaction in RSSALookup is constant O(1), taking only one comparison and (at most) two table accesses. Its drawback, however, is that it requires to build the lookup tables which are linear time in the number of reactions.further readings
 
 ## 3) Model description and application interfaces
 ### a) Model description. 
@@ -74,4 +74,4 @@ The theoritical background and correctness of RSSA is provided in the original p
 
 [2] Thanh, V.H. et al. (2015) The Journal of chemical physics 142, 06B617_1. https://aip.scitation.org/doi/full/10.1063/1.4922923
 
-[3[ Marchetti, L, Priami C., and Thanh, V.H. Simulation Algorithms for Computational Systems Biology, Springer. 2017. https://www.springer.com/gp/book/9783319631110.
+[3[ Marchetti, L, Priami, C. and Thanh, V.H. Simulation Algorithms for Computational Systems Biology, Springer. 2017. https://www.springer.com/gp/book/9783319631110.
