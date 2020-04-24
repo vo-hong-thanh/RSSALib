@@ -65,7 +65,7 @@ public class SRSSA{
     
     //data tracking
     private DataWriter dataWriter;
-    private DataWriter performanceWriter;
+//    private DataWriter performanceWriter;
 
     public void loadModel(String modelFile) throws Exception {
         //build model
@@ -110,8 +110,8 @@ public class SRSSA{
         buildMStateList(states, numTrajectory);
         
         //set up writer
-        dataWriter = new DataWriter("(Data)" + _outputFilename);
-        performanceWriter = new DataWriter("(Perf)" + _outputFilename);
+        dataWriter = new DataWriter(_outputFilename);
+//        performanceWriter = new DataWriter("(Perf)" + _outputFilename);
         
         //write data
         dataWriter.write("time" + "\t");
@@ -128,7 +128,7 @@ public class SRSSA{
         dataWriter.writeLine();
 
         //write performance
-        performanceWriter.writeLine("Fire\tTrial\tUpdateStep\tRunTime\tSearchTime\tUpdateReactionTime\tUpdateSystemVariableTime\tSetOperationTime");
+//        performanceWriter.writeLine("Fire\tTrial\tUpdateStep\tRunTime\tSearchTime\tUpdateReactionTime\tUpdateSystemVariableTime\tSetOperationTime");
         
         //initialize information for simulation
         firingStep = new long[numTrajectory];
@@ -291,10 +291,10 @@ public class SRSSA{
         dataWriter.flush();
         dataWriter.close();
 
-        performanceWriter.writeLine(totalFiringStep  + "\t" + totalTrialStep + "\t" + updateStep + "\t" + totalSimulationTime / 1000.0 + "\t" + searchTime / 1000.0 + "\t" + updateReactionTime / 1000.0 + "\t" + updateSystemVariableTime / 1000.0 + "\t" + updateSetTime/1000.0);
-
-        performanceWriter.flush();
-        performanceWriter.close();
+//        performanceWriter.writeLine(totalFiringStep  + "\t" + totalTrialStep + "\t" + updateStep + "\t" + totalSimulationTime / 1000.0 + "\t" + searchTime / 1000.0 + "\t" + updateReactionTime / 1000.0 + "\t" + updateSystemVariableTime / 1000.0 + "\t" + updateSetTime/1000.0);
+//
+//        performanceWriter.flush();
+//        performanceWriter.close();
     }
 
     //build MStateList

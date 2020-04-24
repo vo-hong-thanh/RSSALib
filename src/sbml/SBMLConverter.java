@@ -10,6 +10,7 @@ import java.util.List;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.Model;
+import org.sbml.jsbml.ModifierSpeciesReference;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -35,8 +36,8 @@ public class SBMLConverter {
         String outputFileName = sbmlFile.substring(0, sbmlFile.lastIndexOf(".")) + ".txt";
         File outputFile = new File(outputFileName);
         
-//        if (!outputFile.exists()) {
-            //reader for reading sbml
+        if (!outputFile.exists()) {
+//            reader for reading sbml
             SBMLReader reader;
             reader = new SBMLReader();
             SBMLDocument sbmlDoc;
@@ -80,7 +81,7 @@ public class SBMLConverter {
                 
                 model = sbmlDoc.getModel();
                 writer.writeLine("##### Model name: " + model.getName());
-                writer.writeLine("#####");
+                
                 //model.getParameterCount();
                 int compartmentCount = model.getCompartmentCount();
                 if(compartmentCount > 1)
@@ -89,8 +90,8 @@ public class SBMLConverter {
                     throw new RuntimeException(errorMess.toString());
                 }
                 
-                writer.writeLine("");
                 writer.writeLine("##### Comparment: " + model.getCompartment(0).getId());
+                writer.writeLine("#####");
                 
                 writer.writeLine("");
                 writer.writeLine("##### Parameters");
@@ -114,9 +115,11 @@ public class SBMLConverter {
                 int reactionCount = model.getReactionCount();
                 for (int r = 0; r < reactionCount; r++) {
                     Reaction reaction = model.getReaction(r);
+                    
+                    int modifierCount = reaction.getModifierCount();
 
                     int reactantCount = reaction.getReactantCount();
-                    if (reactantCount == 0){
+                    if (reactantCount == 0 && modifierCount == 0){
                         writer.write("_ ");
                     }           
                     else //if (reactantCount > 0) 
@@ -125,13 +128,34 @@ public class SBMLConverter {
                             SpeciesReference sr = reaction.getReactant(reactantIndex);
                             int stoich = (int)(sr.getStoichiometry());
                             writer.write( (stoich > 1 ? stoich : "") + sr.getSpecies() + " ");
+                            
+                            if(reactantIndex != reactantCount - 1)
+                            {
+                                writer.write( " + ");
+                            }
+                        }
+                   
+                        for(int mo = 0; mo <modifierCount; mo++ )
+                        {
+                            ModifierSpeciesReference ref = reaction.getModifier(mo);
+                            if(reactantCount > 0 && mo == 0)
+                            {
+                                writer.write( "+ ");
+                            }
+                            
+                            writer.write( ref.getSpecies() + " ");
+                                                        
+                            if(mo != modifierCount - 1)
+                            {
+                                writer.write( " + ");
+                            }
                         }
                     }
-
+                    
                     writer.write("-> ");
 
                     int productCount = reaction.getProductCount();
-                    if (productCount == 0){
+                    if (productCount == 0 && modifierCount == 0){
                         writer.write("_ ");
                     }                        
                     else //if(productCount > 0) 
@@ -140,6 +164,26 @@ public class SBMLConverter {
                             SpeciesReference sr = reaction.getProduct(productIndex);
                             int stoich = (int)(sr.getStoichiometry());
                             writer.write( (stoich > 1 ? stoich : "") + sr.getSpecies() + " ");
+                            
+                            if(productIndex != productCount - 1)
+                            {
+                                writer.write( " + ");
+                            }
+                        }
+                        
+                        for(int mo = 0; mo <modifierCount; mo++ )
+                        {
+                            ModifierSpeciesReference ref = reaction.getModifier(mo);  
+                            if(productCount > 0 && mo == 0)
+                            {
+                                writer.write( "+ ");
+                            }
+                            
+                            writer.write( ref.getSpecies() + " ");
+                            if(mo != modifierCount - 1)
+                            {
+                                writer.write( " + ");
+                            }
                         }
                     }
                     
@@ -227,13 +271,14 @@ public class SBMLConverter {
                     else
                     {
                         errorMess.append("Error - RSSALib converts only Mass-Action kinetics!");
+                        outputFile.delete();
                         throw new RuntimeException(errorMess.toString());
                     }
                 }
                 writer.flush();
                 writer.close();
             }
-//        }
+        }
         
         return outputFileName;
     }

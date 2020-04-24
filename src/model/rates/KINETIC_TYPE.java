@@ -5,9 +5,10 @@
 package model.rates;
 
 /**
- *
- * @author vo
- */
+ * KINETIC_TYPE: types of kinetic rare law
+ * @author Vo Hong Thanh
+ * @version 1.0
+*/
 public interface KINETIC_TYPE {    
     public static String MASS_ACTION = "MASS";
     public static String MICHAELIS_MENTEN = "MM";    

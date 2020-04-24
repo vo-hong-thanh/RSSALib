@@ -2,35 +2,37 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package simulator.nondelay.rssa;
+package simulator.nondelay.rssa.tree_search;
 
-import utils.ComputingMachine;
-import utils.DataWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
-import java.util.Vector;
 import model.Reaction;
 import model.ReactionList;
 import model.Species;
 import model.StateList;
 import model.Term;
+import utils.ComputingMachine;
+import utils.DataWriter;
+import java.util.Vector;
 import model.rates.InhibitoryHillKinetics;
 import simulator.IAlgorithm;
+import simulator.nondelay.rssa.RSSANode;
 
 /**
- * ModifiedRSSA: Modified RSSA
+ * RSSA_Binary: RSSA with tree-based search
  * @author Vo Hong Thanh
  * @version 1.0
 */
-public class ModifiedRSSA implements IAlgorithm{
+public class RSSA_Binary implements IAlgorithm{
     //random generator
     private Random rand = new Random();
     
     //model info
     private StateList states = new StateList();
     private ReactionList reactions = new ReactionList();
-    
+
     //simulation time
     private double currentTime = 0;
     
@@ -42,7 +44,7 @@ public class ModifiedRSSA implements IAlgorithm{
     //logging
     private double logPoint;
     private double logInterval;
-    
+
     //number of reaction firings
     private long firing = 0;
     
@@ -50,20 +52,15 @@ public class ModifiedRSSA implements IAlgorithm{
     private long totalTrial = 0;
     
     //info for rejection
-    private int threshold = 25;
-    private int adjustSize = 4;
-    
     private double fluctuationRate = 0.1;
+    private int threshold = 20;
+    private int adjustSize = 4;
     
     private StateList upperStates = new StateList();
     private StateList lowerStates = new StateList();
     
-    private RSSANode[] RDMNodeList;
-    private double totalMaxPropensity = 0;
-    
-    private int nodeIndex = -1;
-    private double subTotalMaxPropensity = 0;
-    
+    private int treeLength;
+    private RSSANode[] RDMNodeTree;
     private Hashtable<Integer, Integer> mapRactionIndexToNodeIndex = new Hashtable<Integer, Integer>();
 
     //output
@@ -75,21 +72,19 @@ public class ModifiedRSSA implements IAlgorithm{
     private DataWriter dataWriter = null;
 //    private DataWriter performanceWriter = null;
     
-    @Override
     public void loadModel(String modelFilename) throws Exception {
         //build model
         ComputingMachine.buildModelFromFile(modelFilename, states, reactions);
-        
+                
         //build bipartie dependency
         ComputingMachine.buildSpecieReactionDependency(reactions, states);
 
         //build propensity
-        buildRDMNodeArray();
+        buildRDMNodeTree();        
     }
 
-    @Override
-    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean __isWritingFile, String _outputFilename) throws Exception {
-        System.out.println("Modified RSSA with Fluctuation Interval [ (1 -/+ " + fluctuationRate + ")#X ]");
+    public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean _isWritingFile, String _outputFilename) throws Exception {
+        System.out.println("RSSA with Binary Search and Fluctuation Interval [ (1 -/+ " + fluctuationRate + ")#X ]");
         
 //        System.out.println("---------------------------------------------------");//   
 //        System.out.println(" Model information ");     
@@ -100,10 +95,9 @@ public class ModifiedRSSA implements IAlgorithm{
 //        System.out.println(reactions.toStringFull());
 //
 //        System.out.println("---------------------------------------------------");
-        
         //initialize output
-        initalizeSimulation(_maxTime, 0, _logInterval, __isWritingFile, _outputFilename);
-        
+        initalizeSimulation(_maxTime, 0, _logInterval, _isWritingFile, _outputFilename);
+
         //do sim
         long simTime = 0;
         long searchTime = 0;
@@ -112,63 +106,56 @@ public class ModifiedRSSA implements IAlgorithm{
         double searchValue = 0.0;
         double acceptantProb = 0.0;
 
-        int numTrial = 1;            
+        int numTrial = 1;
+        int nodeIndex = -1;
         
         long startSimTime = System.currentTimeMillis();
         do{
-            numTrial = 1;            
-            
+            numTrial = 1;
+            nodeIndex = -1;
+
             long startSearchTime = System.currentTimeMillis();
             while (true) {
                 //propensity is too small => stop simulation
-                if(totalMaxPropensity < 1e-7){
+                if(RDMNodeTree[0].getMaxPropensity() < 1e-7){
                     break;
                 }
                 
                 //search for candidate reaction
-                searchValue = rand.nextDouble() * totalMaxPropensity;
-                if(subTotalMaxPropensity < searchValue){
-                    //sum-up
-    //                System.out.println("subTotalMaxPropensity < searchValue => sum-up method");
-                    for(nodeIndex++; nodeIndex < RDMNodeList.length; nodeIndex++){
-                        subTotalMaxPropensity += RDMNodeList[nodeIndex].getMaxPropensity();                    
-                        if(subTotalMaxPropensity >= searchValue){
-                            break;
-                        }
-                    }
-                }else{
-                    //chop-down
-    //                System.out.println("subTotalMaxPropensity >= searchValue => chop-down method");
-                    for(; nodeIndex >= 0; nodeIndex--){
-                        if(subTotalMaxPropensity - RDMNodeList[nodeIndex].getMaxPropensity() < searchValue){
-                            break;
-                        }
-                        subTotalMaxPropensity -= RDMNodeList[nodeIndex].getMaxPropensity();
+                searchValue = rand.nextDouble() * RDMNodeTree[0].getMaxPropensity();
+                nodeIndex = 0;
+                while (2 * nodeIndex + 1 < treeLength && 2 * nodeIndex + 2 < treeLength) {
+                    if (RDMNodeTree[2 * nodeIndex + 1].getMaxPropensity() > searchValue) {
+                        nodeIndex = 2 * nodeIndex + 1;
+                    } else {
+                        searchValue = RDMNodeTree[nodeIndex].getMaxPropensity() - searchValue;
+                        nodeIndex = 2 * nodeIndex + 2;
                     }
                 }
-            
-                //rejection test for candidate
+
+                //rejection test on candidate
                 acceptantProb = rand.nextDouble();
 //                System.out.println(" - acceptance prob. " + acceptantProb);
 
 //                System.out.println(" - min propensity: " + RDMNodeList[nodeIndex].getMinPropensity() + ", max propensity: "+ RDMNodeList[nodeIndex].getMaxPropensity() );
-                if (RDMNodeList[nodeIndex].getMinPropensity() != 0 && acceptantProb <= RDMNodeList[nodeIndex].getMinPropensity() / RDMNodeList[nodeIndex].getMaxPropensity()) {
+                if (RDMNodeTree[nodeIndex].getMinPropensity() != 0 && acceptantProb <= RDMNodeTree[nodeIndex].getMinPropensity() / RDMNodeTree[nodeIndex].getMaxPropensity()) {
 //                    System.out.println("  => Squeeze");
                     break;
                 }
 
-                double currentPropensity = ComputingMachine.computePropensity(reactions.getReaction(RDMNodeList[nodeIndex].getReactionIndex()), states);
+                double currentPropensity = ComputingMachine.computePropensity(reactions.getReaction(RDMNodeTree[nodeIndex].getReactionIndex()), states);
 //                System.out.println(" - curent propensity: " + currentPropensity );
-                if (currentPropensity != 0 && acceptantProb <= currentPropensity / RDMNodeList[nodeIndex].getMaxPropensity()) {
+                if (currentPropensity != 0 && acceptantProb <= currentPropensity / RDMNodeTree[nodeIndex].getMaxPropensity()) {
 //                    System.out.println("  => Evaluate propensity");
                     break;
                 }
+
                 numTrial++;
             }
             long endSearchTime = System.currentTimeMillis();
             searchTime += (endSearchTime - startSearchTime);
 
-            double delta = ComputingMachine.computeTentativeTime(numTrial, rand, totalMaxPropensity);
+            double delta = ComputingMachine.computeTentativeTime(numTrial, rand, RDMNodeTree[0].getMaxPropensity());
 //            System.out.println("total max propensity: " + totalMaxPropensity + "=> delta: " + delta);
             
             //update time
@@ -176,40 +163,40 @@ public class ModifiedRSSA implements IAlgorithm{
             if(!simulationByStep && currentTime >= maxTime){
                 currentTime = maxTime;
                 
-                //output
-                simOutput.get("t").add(logPoint);                
-                for (Species s : states.getSpeciesList()) {
-                    int pop = states.getPopulation(s);
-                    simOutput.get(s.getName()).add((double)pop);
+                if (currentTime >= logPoint) {
+                    //output
+                    simOutput.get("t").add(logPoint);                
+                    for (Species s : states.getSpeciesList()) {
+                        int pop = states.getPopulation(s);
+                        simOutput.get(s.getName()).add((double)pop);
+                    }
                 }
-            }
                 
+                break;
+            }
 
-            int fireReactionIndex = RDMNodeList[nodeIndex].getReactionIndex();
+            int fireReactionIndex = RDMNodeTree[nodeIndex].getReactionIndex();
 
             //update population
             ComputingMachine.executeReaction(fireReactionIndex, reactions, states);
 
-            //update propensity array as necessary
+             //update propensity tree as necessary
             long startUpdateTime = System.currentTimeMillis();
-            if(updateRDMNodeArray(fireReactionIndex)){
+            if (updateRDMNodeTree(fireReactionIndex)) {
                 updateStep++;
-            }            
+            }
             long endUpdateTime = System.currentTimeMillis();
             updateTime += (endUpdateTime - startUpdateTime);
-            
             //update step
             totalTrial += numTrial;
             firing++;
-
+            
 //            System.out.println("Step: " + firing + "@Time: " + currentTime + ": (Fired)" + reactions.getReaction(fireReactionIndex));
-//            System.out.println("Reaction fired " + fireReactionIndex);
-
-//            System.out.println("---------------------------------------------------");
+//            System.out.println("Reaction fired " + fireReactionIndex);            
 //            //print trace
 //            System.out.print("State list: ");
 //            System.out.println(states);
-            
+
             //log info
             if (currentTime >= logPoint) {
                 //output
@@ -227,7 +214,7 @@ public class ModifiedRSSA implements IAlgorithm{
         simTime = (endSimTime - startSimTime);        
         
         if(willWriteFile){            
-            dataWriter = new DataWriter(outputFile);
+            dataWriter = new DataWriter( outputFile);
 //            performanceWriter = new DataWriter("(Perf)" + outputFile);
             
             //write data
@@ -247,25 +234,56 @@ public class ModifiedRSSA implements IAlgorithm{
                     int pop = simOutput.get(s.getName()).get(i).intValue();
                     dataWriter.write(pop +"\t");                    
                 }
-                dataWriter.writeLine();                
-            }            
-                        
+                dataWriter.writeLine();
+                
+            }
+            
             dataWriter.flush();
             dataWriter.close();
             
-//            //performance            
+//            //performance
 //            performanceWriter.writeLine("Time\tFiring\tTrial\tUpdate\tRunTime\tSearchTime\tUpdateTime");
 //            performanceWriter.writeLine(currentTime +"\t" + firing + "\t" +  totalTrial + "\t" +  updateStep + "\t" + simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
 //
 //            performanceWriter.flush();
 //            performanceWriter.close(); 
-        }
+        }        
 
         return simOutput;
     }
 
+//    private HashSet<Integer> getUpdateReactions(int fireReactionIndex) {
+//        Reaction firedReaction = reactions.getReaction(fireReactionIndex);
+//        Species s;
+//
+//        HashSet<Integer> needUpdateReactions = new HashSet<Integer>();
+//
+//        //update population
+//        for (Term reactant : firedReaction.getReactants()) {
+//            s = reactant.getSpecies();
+//
+//            int pop = states.getPopulation(s);
+//            
+//            if ( (pop != 0 && pop < lowerStates.getPopulation(s)) || pop <= 0) {
+//                computeIntervalSpecies(s);
+//                needUpdateReactions.addAll(s.getAffectReaction());
+//            }
+//        }
+//
+//        for (Term product : firedReaction.getProducts()) {
+//            s = product.getSpecies();
+//
+//            if (!s.isProductOnly() && states.getPopulation(s) > upperStates.getPopulation(s)) {
+//                computeIntervalSpecies(s);
+//                needUpdateReactions.addAll(s.getAffectReaction());
+//            }
+//        }
+//
+//        return needUpdateReactions;
+//    }
+
     //store min-max propensity for RSSA
-    private void buildRDMNodeArray() {
+    private void buildRDMNodeTree() {
 //        System.out.println("build upperPercentage and lowerPercentage state");
         for (Species s : states.getSpeciesList()) {
             if(!s.isProductOnly())
@@ -274,50 +292,63 @@ public class ModifiedRSSA implements IAlgorithm{
             }
         }
 
+        //add a dummy reaction
+        if (reactions.getLength() % 2 != 0) {
+            reactions.addReaction(new Reaction(-1, new ArrayList<Term>(), new ArrayList<Term>()));
+        }
+
 //        System.out.println("Build node array");
         Reaction[] list = reactions.getReactionList();
-        RDMNodeList = new RSSANode[list.length];
-        int i = 0;
-        totalMaxPropensity = 0;
+
+        treeLength = 2 * list.length - 1;
+        RDMNodeTree = new RSSANode[treeLength];
+
+        int startDownIndex = treeLength / 2;
         for (Reaction r : list) {
             double min_propensity = ComputingMachine.computePropensity(r, lowerStates);
             double max_propensity = ComputingMachine.computePropensity(r, upperStates);
-
+            
             if(r.getRateLaw() instanceof InhibitoryHillKinetics){
                 double temp = min_propensity;
                 min_propensity = max_propensity;
                 max_propensity = temp;
             }
             
-            RDMNodeList[i] = new RSSANode(r.getReactionIndex(), min_propensity, max_propensity);
+            RDMNodeTree[startDownIndex] = new RSSANode(r.getReactionIndex(), min_propensity, max_propensity);
 
-            mapRactionIndexToNodeIndex.put(r.getReactionIndex(), i);
+            mapRactionIndexToNodeIndex.put(r.getReactionIndex(), startDownIndex);
 
-//            System.out.println("Node index: " + i + " contains (reaction " + RDMNodeList[i].getReactionIndex() +", min_propensity = "+ RDMNodeList[i].getMinPropensity() +", max_propensity = " + RDMNodeList[i].getMaxPropensity() +")");
+//            System.out.println("Node index: " + startDownIndex + " contains (reaction " + RDMNodeTree[startDownIndex].getReactionIndex() +", min_propensity = "+ RDMNodeTree[startDownIndex].getMinPropensity() +", max_propensity = " + RDMNodeTree[startDownIndex].getMaxPropensity() +")");
+            startDownIndex++;
+        }
 
-            totalMaxPropensity += max_propensity;
-            i++;
+        for (int startUpIndex = (treeLength / 2) - 1; startUpIndex >= 0; startUpIndex--) {
+            double max_propensity_left = RDMNodeTree[2 * startUpIndex + 1].getMaxPropensity();
+            double max_propensity_right = RDMNodeTree[2 * startUpIndex + 2].getMaxPropensity();
+
+            RDMNodeTree[startUpIndex] = new RSSANode(-1, 0, max_propensity_left + max_propensity_right);
         }
     }
 
-    private boolean updateRDMNodeArray(int firedReactionIndex) {
-        Reaction fireReaction = reactions.getReaction(firedReactionIndex);
+    private boolean updateRDMNodeTree(int firedReactionIndex) {
+        Reaction firedReaction = reactions.getReaction(firedReactionIndex);
         Species s;
 
         HashSet<Integer> needUpdateReactions = new HashSet<Integer>();
 
         //update population
-        for (Term reactant : fireReaction.getReactants()) {
+        for (Term reactant : firedReaction.getReactants()) {
             s = reactant.getSpecies();
+
             int pop = states.getPopulation(s);
             
-            if ( pop <= 0 || (pop != 0 && pop < lowerStates.getPopulation(s)) ) {
+            if ( (pop != 0 && pop < lowerStates.getPopulation(s)) || pop <= 0) {
                 computeIntervalSpecies(s);
                 needUpdateReactions.addAll(s.getAffectReaction());
             }
         }
 
-        for (Term product : fireReaction.getProducts()) {
+        for (Term product : firedReaction.getProducts()) {
             s = product.getSpecies();
 
             if (!s.isProductOnly() && states.getPopulation(s) > upperStates.getPopulation(s)) {
@@ -331,47 +362,47 @@ public class ModifiedRSSA implements IAlgorithm{
         }
         else{
             for (int reactionIndex : needUpdateReactions) {
-                Reaction updateReaction = reactions.getReaction(reactionIndex);
-                double min_propensity = ComputingMachine.computePropensity(updateReaction, lowerStates);
-                double max_propensity = ComputingMachine.computePropensity(updateReaction, upperStates);
-
-                if(updateReaction.getRateLaw() instanceof InhibitoryHillKinetics){
+                Reaction r = reactions.getReaction(reactionIndex);
+                double min_propensity = ComputingMachine.computePropensity(r, lowerStates);
+                double max_propensity = ComputingMachine.computePropensity(r, upperStates);
+                
+                if(r.getRateLaw() instanceof InhibitoryHillKinetics){
                     double temp = min_propensity;
                     min_propensity = max_propensity;
                     max_propensity = temp;
                 }
                 
-                int affectedNodeIndex = mapRactionIndexToNodeIndex.get(reactionIndex);
+                int nodePos = mapRactionIndexToNodeIndex.get(reactionIndex);
 
-                double diff = max_propensity - RDMNodeList[affectedNodeIndex].getMaxPropensity();
-                totalMaxPropensity += diff;
+                double diff = max_propensity - RDMNodeTree[nodePos].getMaxPropensity();
+                RDMNodeTree[nodePos].setMinPropensity(min_propensity);
+                RDMNodeTree[nodePos].setMaxPropensity(max_propensity);
 
-                if(affectedNodeIndex <= nodeIndex){
-                    subTotalMaxPropensity += diff;
+                //update parent
+                while (nodePos != 0) {
+                    nodePos = (nodePos - 1) / 2;
+                    RDMNodeTree[nodePos].setMaxPropensity(RDMNodeTree[nodePos].getMaxPropensity() + diff);
                 }
-                
-                RDMNodeList[affectedNodeIndex].setMinPropensity(min_propensity);
-                RDMNodeList[affectedNodeIndex].setMaxPropensity(max_propensity);
             }
             return true;
-        } 
+        }
     }
 
-    private void computeIntervalSpecies(Species s) {        
+    private void computeIntervalSpecies(Species s) {
         int pop = states.getPopulation(s);
         if (pop <= 0) {
             upperStates.updateSpecies(s, 0);
             lowerStates.updateSpecies(s, 0);
-        } else if(pop < threshold) {
+        }else if(pop < threshold) {
             upperStates.updateSpecies(s, pop + adjustSize );
             lowerStates.updateSpecies(s, ((pop - adjustSize) > 0 ? (pop - adjustSize) : 0) );
-        }else {
-            upperStates.updateSpecies(s, (int) (pop * (1 + fluctuationRate)) );
-            lowerStates.updateSpecies(s, (int) (pop * (1 - fluctuationRate)) );
-        }        
+        } else {
+            upperStates.updateSpecies(s, (int) (pop*(1 + fluctuationRate)) );
+            lowerStates.updateSpecies(s, (int) (pop*(1 - fluctuationRate)) );
+        }
     }
     
-    private void initalizeSimulation(double _maxTime, long _maxStep, double _logInterval, boolean __isWritingFile, String _outputFilename) {
+   private void initalizeSimulation(double _maxTime, long _maxStep, double _logInterval, boolean __isWritingFile, String _outputFilename) {
         if(_maxStep > 0){
             maxStep = _maxStep;
             simulationByStep = true;
@@ -392,7 +423,7 @@ public class ModifiedRSSA implements IAlgorithm{
                
         //output
         simOutput = new Hashtable<String, Vector<Double> >(); 
-
+        
         simOutput.put("t", new Vector<>());        
         Species[] species = states.getSpeciesList();
         for(Species s : species){

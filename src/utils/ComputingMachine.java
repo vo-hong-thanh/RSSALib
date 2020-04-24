@@ -374,7 +374,7 @@ public class ComputingMachine {
 //                System.out.println("  => new species (add to state species " + s + ", pop = " + pop + ")");  
             }
 //            else{
-////                System.out.println("  => already in srate");  
+//                System.out.println("  => already in srate");  
 //            }
             partTerm.add(new Term(s, coff));
         }

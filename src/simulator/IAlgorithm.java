@@ -28,7 +28,7 @@ public interface IAlgorithm {
  * @param _logInterval: logging time interval
  * @param _isWritingFile: check whether the ouput will be written to file
  * @param _outputFilename: name of the file to write to if it write
- * @return a vector contains the states at logging time
+ * @return a list of vector containing the states at logging time
 */
     public Hashtable<String, Vector<Double> > runSim(double _maxTime, double _logInterval, boolean _isWritingFile, String _outputFilename) throws Exception;
 //    public Hashtable<String, Vector<Double> > runSim(long _maxStep, double _logInterval, boolean _isWritingFile, String outputFilename) throws Exception;

@@ -10,7 +10,7 @@ import simulator.IAlgorithm;
 import simulator.nondelay.prssa.PRSSA;
 import simulator.nondelay.rssa.RSSA;
 import simulator.nondelay.rssa.cr.RSSA_CR;
-import simulator.nondelay.rssa.tree_search.RSSA_BinarySearch;
+import simulator.nondelay.rssa.tree_search.RSSA_Binary;
 
 /**
  *
@@ -55,7 +55,7 @@ public class CMDSim_Phosphorylation_Syk {
         for(int run = 1; run <= numRuns; run++)
         {
             System.out.println("run @"+run);
-            simulator = new RSSA_BinarySearch();
+            simulator = new RSSA_Binary();
             simulator.loadModel(modelFile+extension);
             
             String outputFileName = "RSSA_Binary_" + modelFile + "_" + run + extension;

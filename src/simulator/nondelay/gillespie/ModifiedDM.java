@@ -58,7 +58,7 @@ public class ModifiedDM implements IAlgorithm{
     private boolean willWriteFile;
     private String outputFile;
     private DataWriter dataWriter = null;
-    private DataWriter performanceWriter = null;
+//    private DataWriter performanceWriter = null;
     
     public void loadModel(String modelFilename) throws Exception {        
         //build model
@@ -178,8 +178,8 @@ public class ModifiedDM implements IAlgorithm{
         simTime = (endSimTime - startSimTime);
         
         if(willWriteFile){            
-            dataWriter = new DataWriter("(Data)" + outputFile);
-            performanceWriter = new DataWriter("(Perf)" + outputFile);
+            dataWriter = new DataWriter(outputFile);
+//            performanceWriter = new DataWriter("(Perf)" + outputFile);
             
             //write data
             Species[] speciesList = states.getSpeciesList();
@@ -201,14 +201,14 @@ public class ModifiedDM implements IAlgorithm{
                 dataWriter.writeLine();
             }
                         
-            performanceWriter.writeLine("Time\tFiring\tRunTime\tSearchTime\tUpdateTime");
-            performanceWriter.writeLine(currentTime + "\t" + firing + "\t" +simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
-            
             dataWriter.flush();
             dataWriter.close();
-
-            performanceWriter.flush();
-            performanceWriter.close();  
+                        
+//            performanceWriter.writeLine("Time\tFiring\tRunTime\tSearchTime\tUpdateTime");
+//            performanceWriter.writeLine(currentTime + "\t" + firing + "\t" +simTime/1000.0 + "\t" + searchTime/1000.0 + "\t" + updateTime/1000.0);
+//
+//            performanceWriter.flush();
+//            performanceWriter.close();  
         }
 
         return simOutput;

@@ -66,8 +66,8 @@ import simulator.nondelay.pdm.sorting.SPDM;
 import simulator.nondelay.prssa.PRSSA;
 import simulator.nondelay.rssa.RSSA;
 import simulator.nondelay.rssa.cr.RSSA_CR;
-import simulator.nondelay.rssa.lookup.RSSA_LookupSearch;
-import simulator.nondelay.rssa.tree_search.RSSA_BinarySearch;
+import simulator.nondelay.rssa.lookup.RSSA_Lookup;
+import simulator.nondelay.rssa.tree_search.RSSA_Binary;
 
 /**
  * GUISim: GUI interface for RSSALib
@@ -319,7 +319,7 @@ public class GUISim extends javax.swing.JFrame {
         jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem2.setForeground(new java.awt.Color(0, 0, 0));
         jMenuItem2.setMnemonic(KeyEvent.VK_B);
-        jMenuItem2.setText("SBML converter");
+        jMenuItem2.setText("SBML import");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mnuLoadandConvertSBML(evt);
@@ -555,13 +555,13 @@ public class GUISim extends javax.swing.JFrame {
                 simulator = new RSSA();
             } else if (algorithmName.equals("RSSA-Binary")) {
                 trackingFile = "RSSA_Binary" + openedFile.getName();
-                simulator = new RSSA_BinarySearch();
+                simulator = new RSSA_Binary();
             } else if (algorithmName.equals("RSSA-CR")) {
                 trackingFile = "RSSA_CR" + openedFile.getName();
                 simulator = new RSSA_CR();
             } else if (algorithmName.equals("RSSA-Lookup")) {
                 trackingFile = "RSSA_Lookup" + openedFile.getName();
-                simulator = new RSSA_LookupSearch();
+                simulator = new RSSA_Lookup();
             } else if (algorithmName.equals("PRSSA")) {
                 trackingFile = "PRSSA" + openedFile.getName();
                 simulator = new PRSSA();
@@ -762,15 +762,17 @@ public class GUISim extends javax.swing.JFrame {
     }//GEN-LAST:event_dropboxAlgorithmActionPerformed
 
     private void mnuLoadandConvertSBML(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuLoadandConvertSBML
-        // TODO add your handling code here:
-        fileChooser.setDialogTitle("Load SBML model");
+        // TODO add your handling code here:        
+        fileChooser.setDialogTitle("Load and convert SBML model");
+        fileChooser.resetChoosableFileFilters();
         fileChooser.setFileFilter(new ModelFileFilter(".xml", "SBML model file"));
         int result = fileChooser.showOpenDialog(this);
 
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedSBML = fileChooser.getSelectedFile();
+            lblModelName.setText("Converting...");
             try
-            {
+            {                
                 String convertedFile = SBMLConverter.convert(selectedSBML.getName());
                 
                 openedFile = new File(convertedFile);                        
@@ -787,6 +789,7 @@ public class GUISim extends javax.swing.JFrame {
                 startFindingIndex = 0;
             }catch(Exception ex)
             {
+                lblModelName.setText("[Model]");
                 //Logger.getLogger(GUISim.class.getName()).log(Level.SEVERE, null, ex);                
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Error reading SBML", JOptionPane.ERROR_MESSAGE);
                 txtSimulationTime.requestFocusInWindow();
@@ -1019,6 +1022,7 @@ public class GUISim extends javax.swing.JFrame {
 
     private void doLoadFile() throws Exception {
         fileChooser.setDialogTitle("Load model");
+        fileChooser.resetChoosableFileFilters();
         fileChooser.setFileFilter(new ModelFileFilter(".txt", "Reaction model file"));
         int result = fileChooser.showOpenDialog(this);
 
@@ -1069,6 +1073,8 @@ public class GUISim extends javax.swing.JFrame {
         }
 
         fileChooser.setDialogTitle("Save model");
+        fileChooser.resetChoosableFileFilters();
+        fileChooser.setSelectedFile(new File(""));
         fileChooser.setFileFilter(new ModelFileFilter(".txt", "Reaction model file"));
         int result = fileChooser.showSaveDialog(this);
 

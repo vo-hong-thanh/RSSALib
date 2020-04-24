@@ -76,7 +76,7 @@
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="KeyEvent.VK_B" type="code"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="SBML converter"/>
+                <Property name="text" type="java.lang.String" value="SBML import"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mnuLoadandConvertSBML"/>
