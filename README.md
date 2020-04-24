@@ -38,7 +38,10 @@ where stoichiometric coefficients v<sub>i</sub><sup>-</sup> and v<sub>i</sub><su
 - Michealis-Menten kinetics denoted by the keyword 'MM'. The rate is MM(S, V<sub>max</sub>, K<sub>m</sub>) = V<sub>max</sub>S / (K<sub>m</sub> + S) with S denoting the substrate population, the maximum rate V<sub>max</sub> and Michaelis constant K<sub>m</sub>, and
 - Hill kinetics. There are two versions of the Hill kinetics that are the exhibitory Hill denoted by the keyword 'HILL' and the inhibitory Hill denoted by 'INHIBITORYHILL', respectively. The exhibitory Hill rate is defined as HILL(S, c, n, s<sub>0</sub>) = c/(1 + (s<sub>0</sub> / S)<sup>n</sup>) in which S is the substrate, Hill coefficient n, the substrate concentration occupying half of the binding sites s<sub>0</sub> and a constant c. Simililarly, the inhibitory Hill rate is INHIBITORYHILL(S, c, n, s<sub>0</sub>) = c/(1 + (S / s<sub>0</sub>)<sup>n</sup>) 
 
-The time delay is an optional part. There are two types of delayed reactions, i.e., consuming delayed reaction CD(d) and nonconsuming delayed rection NCD(d) where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow:
+The time delay is an optional part. There are two types of delayed reactions
+- Consuming delayed reaction CD(d) and,
+- Nonconsuming delayed rection NCD(d) 
+where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow:
 ![example model](figs/model_template.gif)
 
 ### b) application iterfaces.
