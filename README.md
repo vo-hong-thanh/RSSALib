@@ -42,7 +42,7 @@ The time delay is an optional part. There are two types of delayed reactions
 - Consuming delayed reaction CD(d) and,
 - Nonconsuming delayed rection NCD(d) 
 
-where d is the delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow:
+where d is the relative time delay until the completion of the reaction after it is initiated. A reaction by default is non delay. A complete example is as follow:
 ![example model](figs/model_template.gif)
 
 ### b) application iterfaces.
