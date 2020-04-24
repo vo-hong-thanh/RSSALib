@@ -57,7 +57,7 @@ In this usage, we first load the biochemical model by calling the 'loadModel()' 
 
 which parses the model in parameter 'modelFilename'. An exception will be thrown if error occurs during the parsing.
 
-> public Hashtable<String, Vector<Double> > runSim(double simTime, double logInterval, boolean isWritingFile, String outputFilename) throws Exception;
+> public Hashtable<String, Vector<Double> > runSim(double simTime, double logInterval, boolean isWritingFile, String outputFilename) throws Exception
  
 executes the simulation and returns a list of vectors containing snapshots of the state at logging points. It requires four parameters: 
  1. 'simTime': the maximum time the simulation algorithm will advance the model to.
