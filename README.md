@@ -66,7 +66,7 @@ executes the simulation and returns a list of vectors containing snapshots of th
  4. the outputFilename: name of the file to write to if isWritingFile is true
  An exception will be thrown if if error occurs during simulation.
 
-## References and further readings:
+## Further readings and references:
 
 The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. (2015) and Marchetti et al. (2017). 
 
