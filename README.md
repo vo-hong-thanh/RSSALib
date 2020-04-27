@@ -21,7 +21,7 @@ RSSALib provides a full implementation of all known RSSA formulations to offer t
 
 ## 3) Model description and application interfaces
 ### a) Model description. 
-A model supported by RSSALib consists of three parts: 1) the definition of constants, 2) initial populations of species, and 3) reactions between species accompanying with kinetic information. RSSALib also provides a SBML converter, whose implementation is based on the JSBML API (http://sbml.org/Software/JSBML), allowing to convert a reaction model in SBML format (http://sbml.org/Main_Page) to model description supported by RSSALib. 
+A model supported by RSSALib consists of three parts: 1) the definition of constants, 2) initial populations of species, and 3) reactions between species accompanying with kinetic information. RSSALib also provides a SBML converter, whose implementation is based on the JSBML API (http://sbml.org/Software/JSBML), allowing to import a reaction model in SBML format (http://sbml.org/Main_Page) to model description supported by RSSALib. 
 
 The definition of a constant c in the model is specified by simple assignment as: 
 > c = 1.0
