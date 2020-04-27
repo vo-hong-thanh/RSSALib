@@ -75,7 +75,7 @@ An exception will be thrown if if error occurs during simulation.
 
 ## Further readings and references:
 
-The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014). Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. [1,2,4], Thanh and Priami [3] and Marchetti et al. [5]. 
+The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014) [1]. Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. [2,4], Thanh and Priami [3] and Marchetti et al. [5]. 
 
 [1] Thanh, V.H. et al. (2014) Journal of Chemical Physics 141, 10B602_1. https://aip.scitation.org/doi/abs/10.1063/1.4896985.
 
