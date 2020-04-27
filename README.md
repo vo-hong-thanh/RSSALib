@@ -61,7 +61,7 @@ The use of RSSALib for building stand-alone applications is shown in the followi
 In this usage, we first load the biochemical model by calling the 'loadModel()' method, whose input is the file contians the description of the model. The model is then executed by invoking the 'runSim()' method of the simulator. All the simulation algorithms in RSSALib implemented these two methods, defined in the interface 'IAlgorithm'. These moethods have signatures:
 > public void loadModel(String modelFilename) throws Exception
 
-which parses the model in parameter 'modelFilename'. An exception will be thrown if error occurs during the parsing.
+which parses the model in parameter 'modelFilename'. An exception will be thrown if an error occurs during the parsing.
 
 > public Hashtable<String, Vector<Double> > runSim(double simTime, double logInterval, boolean isWritingFile, String outputFilename) throws Exception
  
@@ -71,7 +71,7 @@ executes the simulation and returns a list of vectors containing snapshots of th
  3. 'isWritingFile': whether the ouput will be written to file
  4. 'outputFilename' name of the file to write to if 'isWritingFile' is true
 
-An exception will be thrown if if error occurs during simulation.
+An exception will be thrown if an error occurs during simulation.
 
 ## Further readings and references:
 
