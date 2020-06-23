@@ -73,6 +73,12 @@ executes the simulation and returns a list of vectors containing snapshots of th
 
 An exception will be thrown if an error occurs during simulation.
 
+## Citations:
+
+If you are using RSSALib, please cite:
+
+Vo Hong Thanh. RSSALib: A library for stochastic simulation of complex biochemical reactions. Bioinformatics, 2020, DOI <a href="10.1093/bioinformatics/btaa602">10.1093/bioinformatics/btaa602</a>
+
 ## Further readings and references:
 
 The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014) [1]. Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. [2,4], Thanh and Priami [3] and Marchetti et al. [5]. 
