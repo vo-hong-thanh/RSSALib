@@ -77,7 +77,7 @@ An exception will be thrown if an error occurs during simulation.
 
 Please cite:
 
-&nbsp;&nbsp;&nbsp;&nbsp; Vo Hong Thanh. RSSALib: A library for stochastic simulation of complex biochemical reactions. Bioinformatics, 2020, DOI <a href="10.1093/bioinformatics/btaa602">10.1093/bioinformatics/btaa602</a>
+> Vo Hong Thanh. RSSALib: A library for stochastic simulation of complex biochemical reactions. Bioinformatics, 2020, DOI <a href="10.1093/bioinformatics/btaa602">10.1093/bioinformatics/btaa602</a>
 
 if you are using RSSALib.
 ## Further readings and references:
