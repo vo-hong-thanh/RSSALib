@@ -76,11 +76,13 @@ An exception will be thrown if an error occurs during simulation.
 ## Citations:
 
 Please cite:
-Vo Hong Thanh. RSSALib: A library for stochastic simulation of complex biochemical reactions. Bioinformatics, 2020, DOI <a href="10.1093/bioinformatics/btaa602">10.1093/bioinformatics/btaa602</a>,
+
+&nbsp;&nbsp;&nbsp;&nbsp; Vo Hong Thanh. RSSALib: A library for stochastic simulation of complex biochemical reactions. Bioinformatics, 2020, DOI <a href="10.1093/bioinformatics/btaa602">10.1093/bioinformatics/btaa602</a>
+
 if you are using RSSALib.
 ## Further readings and references:
 
-The theoritical background and correctness of RSSA is provided in the original paper Thanh et al. (2014) [1]. Several improvements and extensions of the original algorithm for dealing with different aspects of practical biochemical reactions are in Thanh et al. [2,4], Thanh and Priami [3] and Marchetti et al. [5]. 
+The theoritical background and correctness of RSSA is provided in the original paper by Thanh et al. (2014) [1]. Several improvements and extensions of RSSA for dealing with different aspects of practical biochemical reactions are in Thanh et al. [2,4], Thanh and Priami [3] and Marchetti et al. [5]. 
 
 [1] Thanh, V.H. et al. (2014) Journal of Chemical Physics 141, 10B602_1. https://aip.scitation.org/doi/abs/10.1063/1.4896985.
 
